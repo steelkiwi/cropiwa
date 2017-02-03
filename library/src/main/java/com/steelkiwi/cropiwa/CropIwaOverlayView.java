@@ -24,10 +24,10 @@ class CropIwaOverlayView extends View {
     private static final int MIN_HEIGHT_CROP_AREA = 0;
     private static final int MIN_WIDTH_CROP_AREA = 0;
 
-    private static final int TOP_LEFT = 0;
-    private static final int TOP_RIGHT = 1;
-    private static final int BOTTOM_LEFT = 2;
-    private static final int BOTTOM_RIGHT = 3;
+    private static final int LEFT_TOP = 0;
+    private static final int RIGHT_TOP = 1;
+    private static final int LEFT_BOTTOM = 2;
+    private static final int RIGHT_BOTTOM = 3;
 
     private Paint clearPaint;
     private Paint generalPaint;
@@ -38,7 +38,10 @@ class CropIwaOverlayView extends View {
     private PointF cropDragStartPoint;
     private RectF cropRectBeforeDrag;
 
-    private RectF cropRegion;
+    private RectF cropRect;
+
+    private int overlayColor;
+    private int borderColor;
 
     public CropIwaOverlayView(Context context) {
         super(context);
@@ -66,15 +69,32 @@ class CropIwaOverlayView extends View {
 
         generalPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
+        Utils res = new Utils(getContext());
+        overlayColor = res.color(R.color.cropiwa_default_overlay_color);
+        borderColor = res.color(R.color.cropiwa_default_border_color);
+
+        initCornerPoints();
+
         setLayerType(LAYER_TYPE_SOFTWARE, null);
+    }
+
+    private void initCornerPoints() {
+        PointF leftTop = new PointF(cropRect.left, cropRect.top);
+        PointF leftBot = new PointF(cropRect.left, cropRect.bottom);
+        PointF rightTop = new PointF(cropRect.right, cropRect.top);
+        PointF rightBot = new PointF(cropRect.right, cropRect.bottom);
+        cornerPoints = new CornerPoint[4];
+        cornerPoints[LEFT_TOP] = new CornerPoint(leftTop, rightTop, leftBot);
+        cornerPoints[LEFT_BOTTOM] = new CornerPoint(leftBot, rightBot, leftTop);
+        cornerPoints[RIGHT_TOP] = new CornerPoint(rightTop, leftTop, rightBot);
+        cornerPoints[RIGHT_BOTTOM] = new CornerPoint(rightBot, leftBot, rightTop);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
         switch (ev.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                onStartGesture(ev);
-                break;
+                return onStartGesture(ev);
             case MotionEvent.ACTION_POINTER_DOWN:
                 onPointerDown(ev);
                 break;
@@ -95,17 +115,23 @@ class CropIwaOverlayView extends View {
         return true;
     }
 
-    private void onStartGesture(MotionEvent ev) {
+    /**
+     * @return {@literal true} if we are interested in further processing of the event
+     */
+    private boolean onStartGesture(MotionEvent ev) {
         //Does user want to resize the crop area?
         if (tryAssociateWithCorner(ev)) {
-            return;
+            return true;
         }
         //Does user want to drag the crop area?
         int index = ev.getActionIndex();
-        if (cropRegion.contains(ev.getX(index), ev.getY(index))) {
+        if (cropRect.contains(ev.getX(index), ev.getY(index))) {
             cropDragStartPoint = new PointF(ev.getX(index), ev.getY(index));
-            cropRectBeforeDrag = new RectF(cropRegion);
+            cropRectBeforeDrag = new RectF(cropRect);
+            return true;
         }
+        //No, we are not interested in this event
+        return false;
     }
 
     private void onPointerDown(MotionEvent ev) {
@@ -113,7 +139,8 @@ class CropIwaOverlayView extends View {
     }
 
     private void onPointerUp(MotionEvent ev) {
-
+        int id = ev.getPointerId(ev.getActionIndex());
+        fingerToCornerMapping.remove(id);
     }
 
     private void onPointerMove(MotionEvent ev) {
@@ -129,7 +156,7 @@ class CropIwaOverlayView extends View {
         } else if (isDraggingCropArea()) {
             float deltaX = ev.getX() - cropDragStartPoint.x;
             float deltaY = ev.getY() - cropDragStartPoint.y;
-            cropRegion = Utils.moveRect(cropRectBeforeDrag, deltaX, deltaY, cropRegion);
+            cropRect = Utils.moveRect(cropRectBeforeDrag, deltaX, deltaY, cropRect);
             updateCornerPointsCoordinates();
         }
     }
@@ -153,10 +180,10 @@ class CropIwaOverlayView extends View {
         configurePaintToDrawOverlay(generalPaint);
         canvas.drawRect(0, 0, getWidth(), getHeight(), generalPaint);
 
-        canvas.drawRect(cropRegion, clearPaint);
+        canvas.drawRect(cropRect, clearPaint);
 
         configurePaintToDrawBorder(generalPaint);
-        canvas.drawRect(cropRegion, generalPaint);
+        canvas.drawRect(cropRect, generalPaint);
 
         for (CornerPoint point : cornerPoints) {
 
@@ -164,7 +191,7 @@ class CropIwaOverlayView extends View {
     }
 
     private void configurePaintToDrawOverlay(Paint paint) {
-
+        paint.setColor(overlayColor);
     }
 
     private void configurePaintToDrawBorder(Paint paint) {
@@ -214,10 +241,6 @@ class CropIwaOverlayView extends View {
             this.horizontalNeighbourPoint = horizontalNeighbourPoint;
             this.verticalNeighbourPoint = verticalNeighbourPoint;
             this.clickableArea = new RectF();
-        }
-
-        public void moveTo(float x, float y) {
-            processDrag(x, y);
         }
 
         public void processDrag(float x, float y) {

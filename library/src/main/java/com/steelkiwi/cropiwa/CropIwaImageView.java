@@ -27,4 +27,8 @@ class CropIwaImageView extends ImageView {
     public CropIwaImageView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
+
+    {
+        setImageResource(android.R.drawable.ic_menu_always_landscape_portrait);
+    }
 }
