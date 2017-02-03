@@ -41,8 +41,9 @@ class Utils {
     }
 
     public static RectF moveRect(RectF initial, float deltaX, float deltaY, @NonNull RectF outRect) {
-
-
+        outRect.set(
+                initial.left + deltaX, initial.top + deltaY,
+                initial.right + deltaX, initial.bottom + deltaY);
         return outRect;
     }
 

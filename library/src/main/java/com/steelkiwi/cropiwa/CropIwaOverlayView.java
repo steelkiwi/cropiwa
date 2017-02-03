@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -22,14 +23,23 @@ import static com.steelkiwi.cropiwa.Utils.dpToPx;
  */
 class CropIwaOverlayView extends View {
 
-    private static final float CLICK_AREA_CORNER_POINT = dpToPx(16);
+    private static final float CLICK_AREA_CORNER_POINT = dpToPx(24);
     private static final int MIN_HEIGHT_CROP_RECT = dpToPx(20);
     private static final int MIN_WIDTH_CROP_RECT = dpToPx(40);
+
+    private static final float LENGTH_CORNER_CATHETUS = MIN_HEIGHT_CROP_RECT * 0.3f;
 
     private static final int LEFT_TOP = 0;
     private static final int RIGHT_TOP = 1;
     private static final int LEFT_BOTTOM = 2;
     private static final int RIGHT_BOTTOM = 3;
+
+    private static final float[][] CORNER_SIDES = {
+            {LENGTH_CORNER_CATHETUS, LENGTH_CORNER_CATHETUS},
+            {-LENGTH_CORNER_CATHETUS, LENGTH_CORNER_CATHETUS},
+            {LENGTH_CORNER_CATHETUS, -LENGTH_CORNER_CATHETUS},
+            {-LENGTH_CORNER_CATHETUS, -LENGTH_CORNER_CATHETUS}
+    };
 
     private Paint clearPaint;
     private Paint generalPaint;
@@ -39,11 +49,14 @@ class CropIwaOverlayView extends View {
 
     private PointF cropDragStartPoint;
     private RectF cropRectBeforeDrag;
-
     private RectF cropRect;
+    private Path cornerPath;
 
     private int overlayColor;
     private int borderColor;
+    private int cornerColor;
+    private int borderStrokeWidth;
+    private int cornerStrokeWidth;
 
     public CropIwaOverlayView(Context context) {
         super(context);
@@ -66,6 +79,7 @@ class CropIwaOverlayView extends View {
         fingerToCornerMapping = new SparseArray<>();
         cornerPoints = new CornerPoint[4];
         cropRect = new RectF();
+        cornerPath = new Path();
 
         clearPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         clearPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
@@ -150,7 +164,9 @@ class CropIwaOverlayView extends View {
     }
 
     private void onPointerDown(MotionEvent ev) {
-        tryAssociateWithCorner(ev);
+        if (isResizing()) {
+            tryAssociateWithCorner(ev);
+        }
     }
 
     private void onPointerUp(MotionEvent ev) {
@@ -183,11 +199,14 @@ class CropIwaOverlayView extends View {
     }
 
     private void updateCornerPointsCoordinates() {
-
+        cornerPoints[LEFT_TOP].processDrag(cropRect.left, cropRect.top);
+        cornerPoints[RIGHT_BOTTOM].processDrag(cropRect.left, cropRect.bottom);
     }
 
     private void updateCropAreaCoordinates() {
-
+        cropRect.set(
+                cornerPoints[LEFT_TOP].x(), cornerPoints[LEFT_TOP].y(),
+                cornerPoints[RIGHT_BOTTOM].x(), cornerPoints[RIGHT_BOTTOM].y());
     }
 
     @Override
@@ -200,9 +219,25 @@ class CropIwaOverlayView extends View {
         configurePaintToDrawBorder(generalPaint);
         canvas.drawRect(cropRect, generalPaint);
 
-        for (CornerPoint point : cornerPoints) {
-
+        configurePaintToDrawCorners(generalPaint);
+        for (int i = 0; i < cornerPoints.length; i++) {
+            drawCorner(canvas, cornerPoints[i], CORNER_SIDES[i][0], CORNER_SIDES[i][1], generalPaint);
         }
+    }
+
+    private void drawCorner(Canvas canvas, CornerPoint point, float deltaX, float deltaY, Paint paint) {
+        cornerPath.rewind();
+        cornerPath.moveTo(point.x(), point.y());
+        cornerPath.rLineTo(deltaX, 0);
+        cornerPath.moveTo(point.x(), point.y());
+        cornerPath.rLineTo(0, deltaY);
+        canvas.drawPath(cornerPath, paint);
+    }
+
+    private void configurePaintToDrawCorners(Paint paint) {
+        paint.setColor(cornerColor);
+        paint.setStrokeWidth(cornerStrokeWidth);
+        paint.setStrokeJoin(Paint.Join.ROUND);
     }
 
     private void configurePaintToDrawOverlay(Paint paint) {
@@ -212,6 +247,7 @@ class CropIwaOverlayView extends View {
 
     private void configurePaintToDrawBorder(Paint paint) {
         paint.setColor(borderColor);
+        paint.setStrokeWidth(borderStrokeWidth);
         paint.setStyle(Paint.Style.STROKE);
     }
 
@@ -292,6 +328,14 @@ class CropIwaOverlayView extends View {
             clickableArea.set(thisPoint.x, thisPoint.y, thisPoint.x, thisPoint.y);
             Utils.enlargeRectBy(CLICK_AREA_CORNER_POINT, clickableArea);
             return clickableArea.contains(x, y);
+        }
+
+        public float x() {
+            return thisPoint.x;
+        }
+
+        public float y() {
+            return thisPoint.y;
         }
     }
 }
