@@ -14,15 +14,17 @@ import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
 
+import static com.steelkiwi.cropiwa.Utils.dpToPx;
+
 /**
  * @author Yaroslav Polyakov https://github.com/polyak01
  * 03.02.2017.
  */
 class CropIwaOverlayView extends View {
 
-    private static final float CLICK_AREA_CORNER_POINT = 0f;
-    private static final int MIN_HEIGHT_CROP_AREA = 0;
-    private static final int MIN_WIDTH_CROP_AREA = 0;
+    private static final float CLICK_AREA_CORNER_POINT = dpToPx(16);
+    private static final int MIN_HEIGHT_CROP_RECT = dpToPx(20);
+    private static final int MIN_WIDTH_CROP_RECT = dpToPx(40);
 
     private static final int LEFT_TOP = 0;
     private static final int RIGHT_TOP = 1;
@@ -61,8 +63,9 @@ class CropIwaOverlayView extends View {
     }
 
     {
-        cropDragStartPoint = new PointF();
-        cropRectBeforeDrag = new RectF();
+        fingerToCornerMapping = new SparseArray<>();
+        cornerPoints = new CornerPoint[4];
+        cropRect = new RectF();
 
         clearPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         clearPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
@@ -73,9 +76,22 @@ class CropIwaOverlayView extends View {
         overlayColor = res.color(R.color.cropiwa_default_overlay_color);
         borderColor = res.color(R.color.cropiwa_default_border_color);
 
-        initCornerPoints();
-
         setLayerType(LAYER_TYPE_SOFTWARE, null);
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        boolean cornerPointsAreNotInitialized = cornerPoints[0] == null;
+        if (cornerPointsAreNotInitialized) {
+            float centerX = w * 0.5f, centerY = h * 0.5f;
+            float halfWidth = MIN_WIDTH_CROP_RECT * 0.5f;
+            float halfHeight = MIN_HEIGHT_CROP_RECT * 0.5f;
+            cropRect.set(
+                    centerX - halfWidth, centerY - halfHeight,
+                    centerX + halfWidth, centerY + halfHeight);
+            initCornerPoints();
+        }
     }
 
     private void initCornerPoints() {
@@ -83,7 +99,6 @@ class CropIwaOverlayView extends View {
         PointF leftBot = new PointF(cropRect.left, cropRect.bottom);
         PointF rightTop = new PointF(cropRect.right, cropRect.top);
         PointF rightBot = new PointF(cropRect.right, cropRect.bottom);
-        cornerPoints = new CornerPoint[4];
         cornerPoints[LEFT_TOP] = new CornerPoint(leftTop, rightTop, leftBot);
         cornerPoints[LEFT_BOTTOM] = new CornerPoint(leftBot, rightBot, leftTop);
         cornerPoints[RIGHT_TOP] = new CornerPoint(rightTop, leftTop, rightBot);
@@ -192,10 +207,12 @@ class CropIwaOverlayView extends View {
 
     private void configurePaintToDrawOverlay(Paint paint) {
         paint.setColor(overlayColor);
+        paint.setStyle(Paint.Style.FILL);
     }
 
     private void configurePaintToDrawBorder(Paint paint) {
-
+        paint.setColor(borderColor);
+        paint.setStyle(Paint.Style.STROKE);
     }
 
     private boolean isResizing() {
@@ -246,13 +263,13 @@ class CropIwaOverlayView extends View {
         public void processDrag(float x, float y) {
             float newX = computeCoordinate(
                     thisPoint.x, x, horizontalNeighbourPoint.x,
-                    MIN_WIDTH_CROP_AREA);
+                    MIN_WIDTH_CROP_RECT);
             thisPoint.x = newX;
             verticalNeighbourPoint.x = newX;
 
             float newY = computeCoordinate(
                     thisPoint.y, y, verticalNeighbourPoint.y,
-                    MIN_HEIGHT_CROP_AREA);
+                    MIN_HEIGHT_CROP_RECT);
             thisPoint.y = newY;
             horizontalNeighbourPoint.y = newY;
         }
