@@ -200,7 +200,7 @@ class CropIwaOverlayView extends View {
 
     private void updateCornerPointsCoordinates() {
         cornerPoints[LEFT_TOP].processDrag(cropRect.left, cropRect.top);
-        cornerPoints[RIGHT_BOTTOM].processDrag(cropRect.left, cropRect.bottom);
+        cornerPoints[RIGHT_BOTTOM].processDrag(cropRect.right, cropRect.bottom);
     }
 
     private void updateCropAreaCoordinates() {
