@@ -2,5 +2,6 @@
 <resources>
     <color name="cropiwa_default_overlay_color">#af000000</color>
     <color name="cropiwa_default_border_color">#fff</color>
+    <color name="cropiwa_default_corner_color">#fff</color>
     <color name="cropiwa_default_grid_color">#fff</color>
 </resources>

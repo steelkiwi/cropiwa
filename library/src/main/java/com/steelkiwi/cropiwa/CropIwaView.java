@@ -35,7 +35,9 @@ public class CropIwaView extends FrameLayout {
     {
         imageView = new CropIwaImageView(getContext());
         addView(imageView);
-        overlayView = new CropIwaOverlayView(getContext());
+
+        CropIwaOverlayConfig overlayConfig = CropIwaOverlayConfig.createDefault(getContext());
+        overlayView = new CropIwaOverlayView(getContext(), overlayConfig);
         addView(overlayView);
     }
 }

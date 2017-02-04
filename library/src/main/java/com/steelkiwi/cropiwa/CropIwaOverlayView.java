@@ -1,6 +1,6 @@
 package com.steelkiwi.cropiwa;
 
-import android.annotation.TargetApi;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -9,8 +9,6 @@ import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
-import android.os.Build;
-import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
@@ -21,29 +19,20 @@ import static com.steelkiwi.cropiwa.Utils.dpToPx;
  * @author Yaroslav Polyakov https://github.com/polyak01
  * 03.02.2017.
  */
+@SuppressLint("ViewConstructor")
 class CropIwaOverlayView extends View {
 
     private static final float CLICK_AREA_CORNER_POINT = dpToPx(24);
-    private static final int MIN_HEIGHT_CROP_RECT = dpToPx(20);
-    private static final int MIN_WIDTH_CROP_RECT = dpToPx(40);
-
-    private static final float LENGTH_CORNER_CATHETUS = MIN_HEIGHT_CROP_RECT * 0.3f;
 
     private static final int LEFT_TOP = 0;
     private static final int RIGHT_TOP = 1;
     private static final int LEFT_BOTTOM = 2;
     private static final int RIGHT_BOTTOM = 3;
 
-    private static final float[][] CORNER_SIDES = {
-            {LENGTH_CORNER_CATHETUS, LENGTH_CORNER_CATHETUS},
-            {-LENGTH_CORNER_CATHETUS, LENGTH_CORNER_CATHETUS},
-            {LENGTH_CORNER_CATHETUS, -LENGTH_CORNER_CATHETUS},
-            {-LENGTH_CORNER_CATHETUS, -LENGTH_CORNER_CATHETUS}
-    };
-
     private Paint clearPaint;
     private Paint generalPaint;
 
+    private float[][] cornerSides;
     private CornerPoint[] cornerPoints;
     private SparseArray<CornerPoint> fingerToCornerMapping;
 
@@ -52,30 +41,15 @@ class CropIwaOverlayView extends View {
     private RectF cropRect;
     private Path cornerPath;
 
-    private int overlayColor;
-    private int borderColor;
-    private int cornerColor;
-    private int borderStrokeWidth;
-    private int cornerStrokeWidth;
+    private CropIwaOverlayConfig config;
 
-    public CropIwaOverlayView(Context context) {
+    public CropIwaOverlayView(Context context, CropIwaOverlayConfig config) {
         super(context);
+        initWith(config);
     }
 
-    public CropIwaOverlayView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-    public CropIwaOverlayView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-    }
-
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public CropIwaOverlayView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-    }
-
-    {
+    private void initWith(CropIwaOverlayConfig c) {
+        config = c;
         fingerToCornerMapping = new SparseArray<>();
         cornerPoints = new CornerPoint[4];
         cropRect = new RectF();
@@ -86,9 +60,8 @@ class CropIwaOverlayView extends View {
 
         generalPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-        Utils res = new Utils(getContext());
-        overlayColor = res.color(R.color.cropiwa_default_overlay_color);
-        borderColor = res.color(R.color.cropiwa_default_border_color);
+        float cornerCathetusLength = Math.min(config.getMinWidth(), config.getMinHeight()) * 0.3f;
+        cornerSides = generateCornerSides(cornerCathetusLength);
 
         setLayerType(LAYER_TYPE_SOFTWARE, null);
     }
@@ -99,8 +72,8 @@ class CropIwaOverlayView extends View {
         boolean cornerPointsAreNotInitialized = cornerPoints[0] == null;
         if (cornerPointsAreNotInitialized) {
             float centerX = w * 0.5f, centerY = h * 0.5f;
-            float halfWidth = MIN_WIDTH_CROP_RECT * 0.5f;
-            float halfHeight = MIN_HEIGHT_CROP_RECT * 0.5f;
+            float halfWidth = config.getInitialWidth() * 0.5f;
+            float halfHeight = config.getInitialHeight() * 0.5f;
             cropRect.set(
                     centerX - halfWidth, centerY - halfHeight,
                     centerX + halfWidth, centerY + halfHeight);
@@ -219,9 +192,14 @@ class CropIwaOverlayView extends View {
         configurePaintToDrawBorder(generalPaint);
         canvas.drawRect(cropRect, generalPaint);
 
+        if (config.shouldDrawGrid()) {
+            configurePaintToDrawGrid(generalPaint);
+            drawGrid(canvas, generalPaint);
+        }
+
         configurePaintToDrawCorners(generalPaint);
         for (int i = 0; i < cornerPoints.length; i++) {
-            drawCorner(canvas, cornerPoints[i], CORNER_SIDES[i][0], CORNER_SIDES[i][1], generalPaint);
+            drawCorner(canvas, cornerPoints[i], cornerSides[i][0], cornerSides[i][1], generalPaint);
         }
     }
 
@@ -234,21 +212,30 @@ class CropIwaOverlayView extends View {
         canvas.drawPath(cornerPath, paint);
     }
 
+    private void drawGrid(Canvas canvas, Paint paint) {
+
+    }
+
     private void configurePaintToDrawCorners(Paint paint) {
-        paint.setColor(cornerColor);
-        paint.setStrokeWidth(cornerStrokeWidth);
+        paint.setColor(config.getCornerColor());
+        paint.setStrokeWidth(config.getCornerStrokeWidth());
         paint.setStrokeJoin(Paint.Join.ROUND);
     }
 
     private void configurePaintToDrawOverlay(Paint paint) {
-        paint.setColor(overlayColor);
+        paint.setColor(config.getOverlayColor());
         paint.setStyle(Paint.Style.FILL);
     }
 
     private void configurePaintToDrawBorder(Paint paint) {
-        paint.setColor(borderColor);
-        paint.setStrokeWidth(borderStrokeWidth);
+        paint.setColor(config.getBorderColor());
+        paint.setStrokeWidth(config.getBorderStrokeWidth());
         paint.setStyle(Paint.Style.STROKE);
+    }
+
+    private void configurePaintToDrawGrid(Paint paint) {
+        paint.setColor(config.getGridColor());
+        paint.setStrokeWidth(config.getGridStrokeWidth());
     }
 
     private boolean isResizing() {
@@ -279,7 +266,7 @@ class CropIwaOverlayView extends View {
         return false;
     }
 
-    private static class CornerPoint {
+    private class CornerPoint {
 
         private RectF clickableArea;
 
@@ -299,13 +286,13 @@ class CropIwaOverlayView extends View {
         public void processDrag(float x, float y) {
             float newX = computeCoordinate(
                     thisPoint.x, x, horizontalNeighbourPoint.x,
-                    MIN_WIDTH_CROP_RECT);
+                    config.getMinWidth());
             thisPoint.x = newX;
             verticalNeighbourPoint.x = newX;
 
             float newY = computeCoordinate(
                     thisPoint.y, y, verticalNeighbourPoint.y,
-                    MIN_HEIGHT_CROP_RECT);
+                    config.getMinHeight());
             thisPoint.y = newY;
             horizontalNeighbourPoint.y = newY;
         }
@@ -337,5 +324,14 @@ class CropIwaOverlayView extends View {
         public float y() {
             return thisPoint.y;
         }
+    }
+
+    private float[][] generateCornerSides(float length) {
+        float[][] result = new float[4][2];
+        result[LEFT_TOP] = new float[] { length, length };
+        result[LEFT_BOTTOM] = new float[] { length, -length };
+        result[RIGHT_TOP] = new float[] { -length, length };
+        result[RIGHT_BOTTOM] = new float[] { -length, -length };
+        return result;
     }
 }

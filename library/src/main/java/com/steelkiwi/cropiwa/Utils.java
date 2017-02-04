@@ -1,12 +1,8 @@
 package com.steelkiwi.cropiwa;
 
-import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.RectF;
-import android.support.annotation.ColorInt;
-import android.support.annotation.ColorRes;
 import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
 import android.util.DisplayMetrics;
 
 /**
@@ -14,18 +10,7 @@ import android.util.DisplayMetrics;
  * 03.02.2017.
  */
 
-class Utils {
-
-    private Context context;
-
-    public Utils(Context context) {
-        this.context = context;
-    }
-
-    @ColorInt
-    public int color(@ColorRes int colorRes) {
-        return ContextCompat.getColor(context, colorRes);
-    }
+abstract class Utils {
 
     public static RectF enlargeRectBy(float value, @NonNull RectF outRect) {
         outRect.top -= value;
