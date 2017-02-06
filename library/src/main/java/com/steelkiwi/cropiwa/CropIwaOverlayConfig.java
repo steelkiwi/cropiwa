@@ -1,6 +1,7 @@
 package com.steelkiwi.cropiwa;
 
 import android.content.Context;
+import android.view.View;
 
 /**
  * @author yarolegovich https://github.com/yarolegovich
@@ -12,9 +13,9 @@ public class CropIwaOverlayConfig {
     private static final int DEFAULT_INITIAL_HEIGHT = 50;
     private static final int DEFAULT_INITIAL_WIDTH = 50;
 
-    public static CropIwaOverlayConfig createDefault(Context context) {
+    public static CropIwaOverlayConfig createDefault(Context context, View overlayView) {
         ResUtil r = new ResUtil(context);
-        return new CropIwaOverlayConfig()
+        return new CropIwaOverlayConfig(overlayView)
                 .setBorderColor(r.color(R.color.cropiwa_default_border_color))
                 .setCornerColor(r.color(R.color.cropiwa_default_corner_color))
                 .setGridColor(r.color(R.color.cropiwa_default_grid_color))
@@ -31,22 +32,29 @@ public class CropIwaOverlayConfig {
     }
 
     private int overlayColor;
+
     private int borderColor;
     private int cornerColor;
     private int gridColor;
-
     private int borderStrokeWidth;
+
     private int cornerStrokeWidth;
     private int gridStrokeWidth;
-
     private int minHeight;
+
     private int minWidth;
-
     private int initialHeight;
-    private int initialWidth;
 
+    private int initialWidth;
     private boolean shouldDrawGrid;
+
     private boolean shouldCropCircle;
+
+    private View overlayView;
+
+    public CropIwaOverlayConfig(View overlayView) {
+        this.overlayView = overlayView;
+    }
 
     public int getOverlayColor() {
         return overlayColor;
@@ -92,11 +100,11 @@ public class CropIwaOverlayConfig {
         return gridStrokeWidth;
     }
 
-    public boolean shouldDrawGrid() {
+    boolean shouldDrawGrid() {
         return shouldDrawGrid;
     }
 
-    public boolean shouldCropCircle() {
+    boolean shouldCropCircle() {
         return shouldCropCircle;
     }
 
@@ -163,5 +171,9 @@ public class CropIwaOverlayConfig {
     public CropIwaOverlayConfig setShouldCropCircle(boolean shouldCropCircle) {
         this.shouldCropCircle = shouldCropCircle;
         return this;
+    }
+
+    public void apply() {
+        overlayView.invalidate();
     }
 }
