@@ -1,4 +1,4 @@
-package com.steelkiwi.cropiwa;
+package com.steelkiwi.cropiwa.util;
 
 import android.content.Context;
 import android.support.annotation.ColorInt;
@@ -10,7 +10,7 @@ import android.support.v4.content.ContextCompat;
  * @author yarolegovich https://github.com/yarolegovich
  * 04.02.2017.
  */
-class ResUtil {
+public class ResUtil {
 
     private Context context;
 

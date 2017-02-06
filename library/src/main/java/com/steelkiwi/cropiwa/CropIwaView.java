@@ -6,6 +6,8 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
 
+import com.steelkiwi.cropiwa.customization.CropIwaOverlayConfig;
+
 /**
  * @author Yaroslav Polyakov https://github.com/polyak01
  * 03.02.2017.

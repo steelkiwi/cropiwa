@@ -1,4 +1,4 @@
-package com.steelkiwi.cropiwa;
+package com.steelkiwi.cropiwa.customization;
 
 /**
  * @author yarolegovich https://github.com/yarolegovich

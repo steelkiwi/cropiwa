@@ -9,14 +9,18 @@ import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
+import android.graphics.Xfermode;
 import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
 
-import static com.steelkiwi.cropiwa.Utils.boundValue;
-import static com.steelkiwi.cropiwa.Utils.dpToPx;
-import static com.steelkiwi.cropiwa.Utils.enlargeRectBy;
-import static com.steelkiwi.cropiwa.Utils.moveRectBounded;
+import com.steelkiwi.cropiwa.customization.CropIwaOverlayConfig;
+import com.steelkiwi.cropiwa.customization.shape.CropIwaShape;
+
+import static com.steelkiwi.cropiwa.util.CropIwaUtils.boundValue;
+import static com.steelkiwi.cropiwa.util.CropIwaUtils.dpToPx;
+import static com.steelkiwi.cropiwa.util.CropIwaUtils.enlargeRectBy;
+import static com.steelkiwi.cropiwa.util.CropIwaUtils.moveRectBounded;
 
 /**
  * @author Yaroslav Polyakov https://github.com/polyak01
@@ -44,6 +48,8 @@ class CropIwaOverlayView extends View {
     private RectF cropRect;
     private Path cornerPath;
 
+    private Xfermode gridDrawXfermode;
+
     private CropIwaOverlayConfig config;
 
     public CropIwaOverlayView(Context context, CropIwaOverlayConfig config) {
@@ -64,6 +70,8 @@ class CropIwaOverlayView extends View {
         clearPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
 
         generalPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+        gridDrawXfermode = new PorterDuffXfermode(PorterDuff.Mode.DST_ATOP);
 
         float cornerCathetusLength = Math.min(config.getMinWidth(), config.getMinHeight()) * 0.3f;
         cornerSides = generateCornerSides(cornerCathetusLength);
@@ -204,10 +212,12 @@ class CropIwaOverlayView extends View {
         configurePaintToDrawOverlay(generalPaint);
         canvas.drawRect(0, 0, getWidth(), getHeight(), generalPaint);
 
-        canvas.drawRect(cropRect, clearPaint);
+        CropIwaShape cropShape = config.getCropShape();
+
+        cropShape.clearCropArea(canvas, cropRect, clearPaint);
 
         configurePaintToDrawBorder(generalPaint);
-        canvas.drawRect(cropRect, generalPaint);
+        cropShape.drawBorder(canvas, cropRect, generalPaint);
 
         if (config.shouldDrawGrid()) {
             configurePaintToDrawGrid(generalPaint);
@@ -246,6 +256,7 @@ class CropIwaOverlayView extends View {
         paint.setColor(config.getCornerColor());
         paint.setStrokeWidth(config.getCornerStrokeWidth());
         paint.setStrokeCap(Paint.Cap.ROUND);
+        paint.setXfermode(null);
     }
 
     private void configurePaintToDrawOverlay(Paint paint) {
@@ -257,12 +268,14 @@ class CropIwaOverlayView extends View {
         paint.setColor(config.getBorderColor());
         paint.setStrokeWidth(config.getBorderStrokeWidth());
         paint.setStyle(Paint.Style.STROKE);
+        paint.setXfermode(null);
     }
 
     private void configurePaintToDrawGrid(Paint paint) {
         paint.setColor(config.getGridColor());
         paint.setStrokeWidth(config.getGridStrokeWidth());
         paint.setStrokeCap(Paint.Cap.SQUARE);
+        paint.setXfermode(gridDrawXfermode);
     }
 
     private boolean isResizing() {

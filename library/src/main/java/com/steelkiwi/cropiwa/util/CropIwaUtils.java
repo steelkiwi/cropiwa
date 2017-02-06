@@ -1,4 +1,4 @@
-package com.steelkiwi.cropiwa;
+package com.steelkiwi.cropiwa.util;
 
 import android.content.res.Resources;
 import android.graphics.RectF;
@@ -10,7 +10,7 @@ import android.util.DisplayMetrics;
  * 03.02.2017.
  */
 
-abstract class Utils {
+public abstract class CropIwaUtils {
 
     public static RectF enlargeRectBy(float value, @NonNull RectF outRect) {
         outRect.top -= value;

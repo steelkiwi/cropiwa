@@ -1,7 +1,13 @@
-package com.steelkiwi.cropiwa;
+package com.steelkiwi.cropiwa.customization;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.view.View;
+
+import com.steelkiwi.cropiwa.R;
+import com.steelkiwi.cropiwa.customization.shape.CropIwaCircleShape;
+import com.steelkiwi.cropiwa.customization.shape.CropIwaShape;
+import com.steelkiwi.cropiwa.util.ResUtil;
 
 /**
  * @author yarolegovich https://github.com/yarolegovich
@@ -27,8 +33,8 @@ public class CropIwaOverlayConfig {
                 .setInitialHeight(DEFAULT_INITIAL_HEIGHT)
                 .setMinWidth(r.dimen(R.dimen.cropiwa_default_min_width))
                 .setMinHeight(r.dimen(R.dimen.cropiwa_default_min_height))
-                .setShouldCropCircle(true)
-                .setShouldDrawGrid(true);
+                .setShouldDrawGrid(true)
+                .setCropShape(new CropIwaCircleShape());
     }
 
     private int overlayColor;
@@ -44,11 +50,10 @@ public class CropIwaOverlayConfig {
 
     private int minWidth;
     private int initialHeight;
-
     private int initialWidth;
-    private boolean shouldDrawGrid;
 
-    private boolean shouldCropCircle;
+    private boolean shouldDrawGrid;
+    private CropIwaShape cropShape;
 
     private View overlayView;
 
@@ -96,12 +101,12 @@ public class CropIwaOverlayConfig {
         return gridStrokeWidth;
     }
 
-    boolean shouldDrawGrid() {
+    public boolean shouldDrawGrid() {
         return shouldDrawGrid;
     }
 
-    boolean shouldCropCircle() {
-        return shouldCropCircle;
+    public CropIwaShape getCropShape() {
+        return cropShape;
     }
 
     public CropIwaOverlayConfig setOverlayColor(int overlayColor) {
@@ -164,12 +169,12 @@ public class CropIwaOverlayConfig {
         return this;
     }
 
-    public CropIwaOverlayConfig setShouldCropCircle(boolean shouldCropCircle) {
-        this.shouldCropCircle = shouldCropCircle;
+    public CropIwaOverlayConfig setCropShape(@NonNull CropIwaShape cropShape) {
+        this.cropShape = cropShape;
         return this;
     }
 
-    void setOverlayView(View v) {
+    public void setOverlayView(View v) {
         overlayView = v;
     }
 
