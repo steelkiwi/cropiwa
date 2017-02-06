@@ -20,7 +20,7 @@ abstract class Utils {
         return outRect;
     }
 
-    public static float boundValue(float value, int lowBound, int highBound) {
+    public static float boundValue(float value, float lowBound, float highBound) {
         return Math.max(Math.min(value, highBound), lowBound);
     }
 
@@ -28,34 +28,17 @@ abstract class Utils {
             @NonNull RectF initial, float deltaX, float deltaY,
             int horizontalBound, int verticalBound,
             @NonNull RectF outRect) {
-        float newLeft = getLeftCoordWithBoundCheck(initial.left + deltaX,
-                initial.right + deltaX, horizontalBound,
-                initial.width());
+        float newLeft = boundValue(initial.left + deltaX, 0, horizontalBound - initial.width());
         float newRight = newLeft + initial.width();
-
-        float newTop = getLeftCoordWithBoundCheck(initial.top + deltaY,
-                initial.bottom + deltaY, verticalBound,
-                initial.height());
+        float newTop = boundValue(initial.top + deltaY, 0, verticalBound - initial.height());
         float newBottom = newTop + initial.height();
-
         outRect.set(newLeft, newTop, newRight, newBottom);
         return outRect;
-    }
-
-    private static float getLeftCoordWithBoundCheck(
-            float left, float right, float bound,
-            float size) {
-        if (left < 0) {
-            return 0;
-        } else if (right > bound) {
-            return bound - size;
-        } else {
-            return left;
-        }
     }
 
     public static int dpToPx(int dp) {
         DisplayMetrics dm = Resources.getSystem().getDisplayMetrics();
         return Math.round(dm.density * dp);
     }
+
 }
