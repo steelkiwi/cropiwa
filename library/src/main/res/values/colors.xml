@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="cropiwa_default_overlay_color">#af000000</color>
-    <color name="cropiwa_default_border_color">#fff</color>
-    <color name="cropiwa_default_corner_color">#fff</color>
+    <color name="cropiwa_default_border_color">#f5f5f5</color>
+    <color name="cropiwa_default_corner_color">#f5f5f5</color>
     <color name="cropiwa_default_grid_color">#fff</color>
 </resources>

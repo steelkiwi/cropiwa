@@ -8,6 +8,10 @@ import android.content.Context;
  */
 public class CropIwaOverlayConfig {
 
+    //Default size of crop area in percents
+    private static final int DEFAULT_INITIAL_HEIGHT = 50;
+    private static final int DEFAULT_INITIAL_WIDTH = 50;
+
     public static CropIwaOverlayConfig createDefault(Context context) {
         ResUtil r = new ResUtil(context);
         return new CropIwaOverlayConfig()
@@ -18,8 +22,8 @@ public class CropIwaOverlayConfig {
                 .setBorderStrokeWidth(r.dimen(R.dimen.cropiwa_default_border_stroke_width))
                 .setCornerStrokeWidth(r.dimen(R.dimen.cropiwa_default_corner_stroke_width))
                 .setGridStrokeWidth(r.dimen(R.dimen.cropiwa_default_grid_stroke_width))
-                .setInitialWidth(r.dimen(R.dimen.cropiwa_default_initial_width))
-                .setInitialHeight(r.dimen(R.dimen.cropiwa_default_initial_height))
+                .setInitialWidth(DEFAULT_INITIAL_WIDTH)
+                .setInitialHeight(DEFAULT_INITIAL_HEIGHT)
                 .setMinWidth(r.dimen(R.dimen.cropiwa_default_min_width))
                 .setMinHeight(r.dimen(R.dimen.cropiwa_default_min_height))
                 .setShouldCropCircle(true)

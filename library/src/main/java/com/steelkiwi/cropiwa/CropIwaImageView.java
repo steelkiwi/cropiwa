@@ -29,6 +29,6 @@ class CropIwaImageView extends ImageView {
     }
 
     {
-        setImageResource(android.R.drawable.ic_menu_always_landscape_portrait);
+        setImageResource(R.drawable.default_image);
     }
 }

@@ -72,8 +72,9 @@ class CropIwaOverlayView extends View {
         boolean cornerPointsAreNotInitialized = cornerPoints[0] == null;
         if (cornerPointsAreNotInitialized) {
             float centerX = w * 0.5f, centerY = h * 0.5f;
-            float halfWidth = config.getInitialWidth() * 0.5f;
-            float halfHeight = config.getInitialHeight() * 0.5f;
+            //Initial width/height are in percents of view's width and height
+            float halfWidth = w * config.getInitialWidth() * 0.01f * 0.5f;
+            float halfHeight = h * config.getInitialHeight() * 0.01f * 0.5f;
             cropRect.set(
                     centerX - halfWidth, centerY - halfHeight,
                     centerX + halfWidth, centerY + halfHeight);
@@ -90,6 +91,12 @@ class CropIwaOverlayView extends View {
         cornerPoints[LEFT_BOTTOM] = new CornerPoint(leftBot, rightBot, leftTop);
         cornerPoints[RIGHT_TOP] = new CornerPoint(rightTop, leftTop, rightBot);
         cornerPoints[RIGHT_BOTTOM] = new CornerPoint(rightBot, leftBot, rightTop);
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        //We will get here measured dimensions of an ImageView
+        setMeasuredDimension(widthMeasureSpec, heightMeasureSpec);
     }
 
     @Override
@@ -219,7 +226,7 @@ class CropIwaOverlayView extends View {
     private void configurePaintToDrawCorners(Paint paint) {
         paint.setColor(config.getCornerColor());
         paint.setStrokeWidth(config.getCornerStrokeWidth());
-        paint.setStrokeJoin(Paint.Join.ROUND);
+        paint.setStrokeCap(Paint.Cap.ROUND);
     }
 
     private void configurePaintToDrawOverlay(Paint paint) {
