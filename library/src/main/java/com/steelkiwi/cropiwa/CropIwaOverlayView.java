@@ -29,6 +29,7 @@ import static com.steelkiwi.cropiwa.util.CropIwaUtils.moveRectBounded;
 @SuppressLint("ViewConstructor")
 class CropIwaOverlayView extends View {
 
+
     private static final float CLICK_AREA_CORNER_POINT = dpToPx(24);
 
     private static final int LEFT_TOP = 0;
@@ -82,8 +83,7 @@ class CropIwaOverlayView extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        boolean cornerPointsAreNotInitialized = cornerPoints[0] == null;
-        if (cornerPointsAreNotInitialized) {
+        if (w != oldw || h != oldh) {
             float centerX = w * 0.5f, centerY = h * 0.5f;
             //Initial width/height are in percents of view's width and height
             float halfWidth = w * config.getInitialWidth() * 0.01f * 0.5f;
@@ -116,7 +116,8 @@ class CropIwaOverlayView extends View {
     public boolean onTouchEvent(MotionEvent ev) {
         switch (ev.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                return onStartGesture(ev);
+                onStartGesture(ev);
+                break;
             case MotionEvent.ACTION_POINTER_DOWN:
                 onPointerDown(ev);
                 break;
@@ -137,23 +138,17 @@ class CropIwaOverlayView extends View {
         return true;
     }
 
-    /**
-     * @return {@literal true} if we are interested in further processing of the event
-     */
-    private boolean onStartGesture(MotionEvent ev) {
+    private void onStartGesture(MotionEvent ev) {
         //Does user want to resize the crop area?
         if (tryAssociateWithCorner(ev)) {
-            return true;
+            return;
         }
         //Does user want to drag the crop area?
         int index = ev.getActionIndex();
         if (cropRect.contains(ev.getX(index), ev.getY(index))) {
             cropDragStartPoint = new PointF(ev.getX(index), ev.getY(index));
             cropRectBeforeDrag = new RectF(cropRect);
-            return true;
         }
-        //No, we are not interested in this event
-        return false;
     }
 
     private void onPointerDown(MotionEvent ev) {
@@ -278,11 +273,11 @@ class CropIwaOverlayView extends View {
         paint.setXfermode(gridDrawXfermode);
     }
 
-    private boolean isResizing() {
+    public boolean isResizing() {
         return fingerToCornerMapping.size() != 0;
     }
 
-    private boolean isDraggingCropArea() {
+    public boolean isDraggingCropArea() {
         return cropDragStartPoint != null;
     }
 
@@ -374,4 +369,5 @@ class CropIwaOverlayView extends View {
         result[RIGHT_BOTTOM] = new float[]{-length, -length};
         return result;
     }
+
 }

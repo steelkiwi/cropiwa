@@ -6,6 +6,7 @@ import android.view.View;
 
 import com.steelkiwi.cropiwa.R;
 import com.steelkiwi.cropiwa.customization.shape.CropIwaCircleShape;
+import com.steelkiwi.cropiwa.customization.shape.CropIwaRectShape;
 import com.steelkiwi.cropiwa.customization.shape.CropIwaShape;
 import com.steelkiwi.cropiwa.util.ResUtil;
 
@@ -34,7 +35,7 @@ public class CropIwaOverlayConfig {
                 .setMinWidth(r.dimen(R.dimen.cropiwa_default_min_width))
                 .setMinHeight(r.dimen(R.dimen.cropiwa_default_min_height))
                 .setShouldDrawGrid(true)
-                .setCropShape(new CropIwaCircleShape());
+                .setCropShape(new CropIwaRectShape());
     }
 
     private int overlayColor;
