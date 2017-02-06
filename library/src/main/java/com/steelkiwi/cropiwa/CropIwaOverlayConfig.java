@@ -13,9 +13,9 @@ public class CropIwaOverlayConfig {
     private static final int DEFAULT_INITIAL_HEIGHT = 50;
     private static final int DEFAULT_INITIAL_WIDTH = 50;
 
-    public static CropIwaOverlayConfig createDefault(Context context, View overlayView) {
+    public static CropIwaOverlayConfig createDefault(Context context) {
         ResUtil r = new ResUtil(context);
-        return new CropIwaOverlayConfig(overlayView)
+        return new CropIwaOverlayConfig()
                 .setBorderColor(r.color(R.color.cropiwa_default_border_color))
                 .setCornerColor(r.color(R.color.cropiwa_default_corner_color))
                 .setGridColor(r.color(R.color.cropiwa_default_grid_color))
@@ -28,7 +28,7 @@ public class CropIwaOverlayConfig {
                 .setMinWidth(r.dimen(R.dimen.cropiwa_default_min_width))
                 .setMinHeight(r.dimen(R.dimen.cropiwa_default_min_height))
                 .setShouldCropCircle(true)
-                .setShouldDrawGrid(false);
+                .setShouldDrawGrid(true);
     }
 
     private int overlayColor;
@@ -51,10 +51,6 @@ public class CropIwaOverlayConfig {
     private boolean shouldCropCircle;
 
     private View overlayView;
-
-    public CropIwaOverlayConfig(View overlayView) {
-        this.overlayView = overlayView;
-    }
 
     public int getOverlayColor() {
         return overlayColor;
@@ -173,7 +169,13 @@ public class CropIwaOverlayConfig {
         return this;
     }
 
+    void setOverlayView(View v) {
+        overlayView = v;
+    }
+
     public void apply() {
-        overlayView.invalidate();
+        if (overlayView != null) {
+            overlayView.invalidate();
+        }
     }
 }

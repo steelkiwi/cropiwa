@@ -13,7 +13,10 @@ import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
 
+import static com.steelkiwi.cropiwa.Utils.boundValue;
 import static com.steelkiwi.cropiwa.Utils.dpToPx;
+import static com.steelkiwi.cropiwa.Utils.enlargeRectBy;
+import static com.steelkiwi.cropiwa.Utils.moveRectBounded;
 
 /**
  * @author Yaroslav Polyakov https://github.com/polyak01
@@ -50,6 +53,8 @@ class CropIwaOverlayView extends View {
 
     private void initWith(CropIwaOverlayConfig c) {
         config = c;
+        config.setOverlayView(this);
+
         fingerToCornerMapping = new SparseArray<>();
         cornerPoints = new CornerPoint[4];
         cropRect = new RectF();
@@ -160,14 +165,19 @@ class CropIwaOverlayView extends View {
                 int id = ev.getPointerId(i);
                 CornerPoint point = fingerToCornerMapping.get(id);
                 if (point != null) {
-                    point.processDrag(ev.getX(i), ev.getY(i));
+                    point.processDrag(
+                            boundValue(ev.getX(i), 0, getWidth()),
+                            boundValue(ev.getY(i), 0, getHeight()));
                 }
             }
             updateCropAreaCoordinates();
         } else if (isDraggingCropArea()) {
             float deltaX = ev.getX() - cropDragStartPoint.x;
             float deltaY = ev.getY() - cropDragStartPoint.y;
-            cropRect = Utils.moveRect(cropRectBeforeDrag, deltaX, deltaY, cropRect);
+            cropRect = moveRectBounded(
+                    cropRectBeforeDrag, deltaX, deltaY,
+                    getWidth(), getHeight(),
+                    cropRect);
             updateCornerPointsCoordinates();
         }
     }
@@ -220,7 +230,16 @@ class CropIwaOverlayView extends View {
     }
 
     private void drawGrid(Canvas canvas, Paint paint) {
-
+        float stepX = cropRect.width() * 0.333f;
+        float stepY = cropRect.height() * 0.333f;
+        float x = cropRect.left;
+        float y = cropRect.top;
+        for (int i = 0; i < 3; i++) {
+            x += stepX;
+            y += stepY;
+            canvas.drawLine(x, cropRect.top, x, cropRect.bottom, paint);
+            canvas.drawLine(cropRect.left, y, cropRect.right, y, paint);
+        }
     }
 
     private void configurePaintToDrawCorners(Paint paint) {
@@ -243,6 +262,7 @@ class CropIwaOverlayView extends View {
     private void configurePaintToDrawGrid(Paint paint) {
         paint.setColor(config.getGridColor());
         paint.setStrokeWidth(config.getGridStrokeWidth());
+        paint.setStrokeCap(Paint.Cap.SQUARE);
     }
 
     private boolean isResizing() {
@@ -320,7 +340,7 @@ class CropIwaOverlayView extends View {
 
         public boolean isClicked(float x, float y) {
             clickableArea.set(thisPoint.x, thisPoint.y, thisPoint.x, thisPoint.y);
-            Utils.enlargeRectBy(CLICK_AREA_CORNER_POINT, clickableArea);
+            enlargeRectBy(CLICK_AREA_CORNER_POINT, clickableArea);
             return clickableArea.contains(x, y);
         }
 
@@ -335,10 +355,10 @@ class CropIwaOverlayView extends View {
 
     private float[][] generateCornerSides(float length) {
         float[][] result = new float[4][2];
-        result[LEFT_TOP] = new float[] { length, length };
-        result[LEFT_BOTTOM] = new float[] { length, -length };
-        result[RIGHT_TOP] = new float[] { -length, length };
-        result[RIGHT_BOTTOM] = new float[] { -length, -length };
+        result[LEFT_TOP] = new float[]{length, length};
+        result[LEFT_BOTTOM] = new float[]{length, -length};
+        result[RIGHT_TOP] = new float[]{-length, length};
+        result[RIGHT_BOTTOM] = new float[]{-length, -length};
         return result;
     }
 }

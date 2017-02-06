@@ -2,7 +2,7 @@
 <resources>
     <dimen name="cropiwa_default_border_stroke_width">1dp</dimen>
     <dimen name="cropiwa_default_corner_stroke_width">4dp</dimen>
-    <dimen name="cropiwa_default_grid_stroke_width">4dp</dimen>
+    <dimen name="cropiwa_default_grid_stroke_width">1dp</dimen>
     <dimen name="cropiwa_default_min_height">40dp</dimen>
     <dimen name="cropiwa_default_min_width">40dp</dimen>
 </resources>

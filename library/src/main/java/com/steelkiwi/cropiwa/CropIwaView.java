@@ -11,7 +11,7 @@ import android.widget.FrameLayout;
  * 03.02.2017.
  */
 public class CropIwaView extends FrameLayout {
-    
+
     private CropIwaImageView imageView;
     private CropIwaOverlayView overlayView;
 
@@ -42,8 +42,8 @@ public class CropIwaView extends FrameLayout {
         imageView = new CropIwaImageView(getContext());
         addView(imageView);
 
+        overlayConfig = CropIwaOverlayConfig.createDefault(getContext());
         overlayView = new CropIwaOverlayView(getContext(), overlayConfig);
-        overlayConfig = CropIwaOverlayConfig.createDefault(getContext(), overlayView);
         addView(overlayView);
     }
 
