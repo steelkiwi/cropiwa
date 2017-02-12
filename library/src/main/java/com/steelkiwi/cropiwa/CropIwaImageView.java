@@ -12,11 +12,13 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.widget.ImageView;
 
+import com.steelkiwi.cropiwa.util.MatrixUtils;
+
 /**
  * @author Yaroslav Polyakov https://github.com/polyak01
  * 03.02.2017.
  */
-class CropIwaImageView extends ImageView {
+class CropIwaImageView extends ImageView implements OnNewBoundsListener {
 
     private static final float MAX_SCALE = 3f;
     private static final float MIN_SCALE = 1f;

@@ -19,7 +19,6 @@ import com.steelkiwi.cropiwa.config.CropIwaOverlayConfig;
  * 03.02.2017.
  */
 public class CropIwaView extends FrameLayout {
-
     private CropIwaImageView imageView;
     private CropIwaOverlayView overlayView;
 
