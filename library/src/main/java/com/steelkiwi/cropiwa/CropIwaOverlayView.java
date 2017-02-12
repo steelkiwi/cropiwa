@@ -18,7 +18,10 @@ import com.steelkiwi.cropiwa.shape.CropIwaShape;
 @SuppressLint("ViewConstructor")
 class CropIwaOverlayView extends View {
 
+
     private Paint overlayPaint;
+    private OnNewBoundsListener newBoundsListener;
+
     protected RectF cropRect;
     protected CropIwaOverlayConfig config;
 
@@ -46,13 +49,21 @@ class CropIwaOverlayView extends View {
         if (w != oldw || h != oldh) {
             float centerX = w * 0.5f, centerY = h * 0.5f;
             //Initial width/height are in percents of view's width and height
-            float halfWidth = w * config.getInitialWidth() * 0.01f * 0.5f;
-            float halfHeight = h * config.getInitialHeight() * 0.01f * 0.5f;
+            float halfWidth, halfHeight;
+            if (w < h) {
+                halfWidth = w * 0.8f * 0.5f;
+                halfHeight = halfWidth / config.getAspectRatio().getRatio();
+            } else {
+                halfHeight = w * 0.8f * 0.5f;
+                halfWidth = halfHeight * config.getAspectRatio().getRatio();
+            }
             cropRect.set(
                     centerX - halfWidth, centerY - halfHeight,
                     centerX + halfWidth, centerY + halfHeight);
+            notifyNewBounds();
         }
     }
+
 
 
     @Override
@@ -74,12 +85,24 @@ class CropIwaOverlayView extends View {
         cropShape.draw(canvas, cropRect);
     }
 
+    protected void notifyNewBounds() {
+        if (newBoundsListener != null) {
+            //Do not allow client code to modify our cropRect!
+            RectF rect = new RectF(cropRect);
+            newBoundsListener.onNewBounds(rect);
+        }
+    }
+
     public boolean isResizing() {
         return false;
     }
 
     public boolean isDraggingCropArea() {
         return false;
+    }
+
+    public void setNewBoundsListener(OnNewBoundsListener newBoundsListener) {
+        this.newBoundsListener = newBoundsListener;
     }
 
 

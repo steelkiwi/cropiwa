@@ -36,6 +36,7 @@ public abstract class CropIwaShape {
         cornerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         cornerPaint.setStrokeWidth(overlayConfig.getCornerStrokeWidth());
         cornerPaint.setColor(overlayConfig.getCornerColor());
+        cornerPaint.setStyle(Paint.Style.STROKE);
         cornerPaint.setStrokeCap(Paint.Cap.ROUND);
 
         cornerPath = new Path();
@@ -73,7 +74,7 @@ public abstract class CropIwaShape {
         float stepY = cropBounds.height() * 0.333f;
         float x = cropBounds.left;
         float y = cropBounds.top;
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 2; i++) {
             x += stepX;
             y += stepY;
             canvas.drawLine(x, cropBounds.top, x, cropBounds.bottom, paint);

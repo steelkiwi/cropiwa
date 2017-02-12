@@ -60,6 +60,7 @@ public class CropIwaView extends FrameLayout {
         overlayView = overlayConfig.isDynamicCrop() ?
                 new CropIwaDynamicOverlayView(getContext(), overlayConfig) :
                 new CropIwaOverlayView(getContext(), overlayConfig);
+        overlayView.setNewBoundsListener(imageView);
         LayoutParams params = generateDefaultLayoutParams();
         params.gravity = Gravity.CENTER;
         overlayView.setLayoutParams(params);

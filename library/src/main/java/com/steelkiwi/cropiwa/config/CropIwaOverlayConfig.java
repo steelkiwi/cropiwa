@@ -4,8 +4,10 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.view.View;
 
+import com.steelkiwi.cropiwa.AspectRatio;
 import com.steelkiwi.cropiwa.R;
 import com.steelkiwi.cropiwa.shape.CropIwaOvalShape;
+import com.steelkiwi.cropiwa.shape.CropIwaRectShape;
 import com.steelkiwi.cropiwa.shape.CropIwaShape;
 import com.steelkiwi.cropiwa.util.ResUtil;
 
@@ -14,9 +16,6 @@ import com.steelkiwi.cropiwa.util.ResUtil;
  * 04.02.2017.
  */
 public class CropIwaOverlayConfig {
-    //Default size of crop area in percents
-    private static final int DEFAULT_INITIAL_HEIGHT = 50;
-    private static final int DEFAULT_INITIAL_WIDTH = 50;
 
     public static CropIwaOverlayConfig createDefault(Context context) {
         ResUtil r = new ResUtil(context);
@@ -28,13 +27,12 @@ public class CropIwaOverlayConfig {
                 .setBorderStrokeWidth(r.dimen(R.dimen.cropiwa_default_border_stroke_width))
                 .setCornerStrokeWidth(r.dimen(R.dimen.cropiwa_default_corner_stroke_width))
                 .setGridStrokeWidth(r.dimen(R.dimen.cropiwa_default_grid_stroke_width))
-                .setInitialWidth(DEFAULT_INITIAL_WIDTH)
-                .setInitialHeight(DEFAULT_INITIAL_HEIGHT)
                 .setMinWidth(r.dimen(R.dimen.cropiwa_default_min_width))
                 .setMinHeight(r.dimen(R.dimen.cropiwa_default_min_height))
+                .setAspectRatio(new AspectRatio(9, 16))
                 .setShouldDrawGrid(true)
-                .setDynamicCrop(true);
-        CropIwaShape shape = new CropIwaOvalShape(config);
+                .setDynamicCrop(false);
+        CropIwaShape shape = new CropIwaRectShape(config);
         config.setCropShape(shape);
         return config;
     }
@@ -48,15 +46,14 @@ public class CropIwaOverlayConfig {
 
     private int cornerStrokeWidth;
     private int gridStrokeWidth;
-    private int minHeight;
 
+    private int minHeight;
     private int minWidth;
-    private int initialHeight;
-    private int initialWidth;
+
+    private AspectRatio aspectRatio;
 
     private boolean isDynamicCrop;
     private boolean shouldDrawGrid;
-    private boolean shouldDrawCorners;
     private CropIwaShape cropShape;
 
     private View overlayView;
@@ -89,14 +86,6 @@ public class CropIwaOverlayConfig {
         return minWidth;
     }
 
-    public int getInitialHeight() {
-        return initialHeight;
-    }
-
-    public int getInitialWidth() {
-        return initialWidth;
-    }
-
     public int getGridColor() {
         return gridColor;
     }
@@ -115,6 +104,10 @@ public class CropIwaOverlayConfig {
 
     public boolean isDynamicCrop() {
         return isDynamicCrop;
+    }
+
+    public AspectRatio getAspectRatio() {
+        return aspectRatio;
     }
 
     public CropIwaOverlayConfig setOverlayColor(int overlayColor) {
@@ -162,13 +155,8 @@ public class CropIwaOverlayConfig {
         return this;
     }
 
-    public CropIwaOverlayConfig setInitialHeight(int initialHeight) {
-        this.initialHeight = initialHeight;
-        return this;
-    }
-
-    public CropIwaOverlayConfig setInitialWidth(int initialWidth) {
-        this.initialWidth = initialWidth;
+    public CropIwaOverlayConfig setAspectRatio(AspectRatio ratio) {
+        this.aspectRatio = ratio;
         return this;
     }
 
@@ -184,11 +172,6 @@ public class CropIwaOverlayConfig {
 
     public CropIwaOverlayConfig setDynamicCrop(boolean enabled) {
         this.isDynamicCrop = enabled;
-        return this;
-    }
-
-    public CropIwaOverlayConfig setDrawCorners(boolean enabled) {
-        this.shouldDrawCorners = enabled;
         return this;
     }
 

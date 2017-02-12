@@ -3,6 +3,7 @@ package com.steelkiwi.cropiwa;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Matrix;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.AttributeSet;
@@ -24,14 +25,12 @@ class CropIwaImageView extends ImageView {
     private ScaleGestureDetector scaleGestureDetector;
     private GestureDetector translationDetector;
 
-    private float defaultXTranslation;
-    private float defaultYTranslation;
+    private RectF allowedBounds;
+    private RectF imageBounds;
 
     private float[] matrixValuesOut;
 
-    private float defaultScale;
-    private int imageHeight;
-    private int imageWidth;
+    private float defaultScale = 1f;
 
     public CropIwaImageView(Context context) {
         super(context);
@@ -54,6 +53,9 @@ class CropIwaImageView extends ImageView {
     {
         setImageResource(R.drawable.default_image);
 
+        imageBounds = new RectF();
+        allowedBounds = new RectF();
+
         matrixValuesOut = new float[9];
 
         imageMatrix = new Matrix();
@@ -66,14 +68,9 @@ class CropIwaImageView extends ImageView {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        if (hasImageSize()) {
-            boolean shouldTranslate = w != getImageWidth() || h != getImageHeight();
-            if (shouldTranslate) {
-                defaultXTranslation = (w - getImageWidth()) * 0.5f;
-                defaultYTranslation = (h - getImageHeight()) * 0.5f;
-                imageMatrix.postTranslate(defaultXTranslation, defaultYTranslation);
-                setImageMatrix(imageMatrix);
-            }
+        if (hasImageSize() && allowedBounds.width() != 0 && allowedBounds.height() != 0) {
+            moveToAllowedBounds();
+            updateImageBounds();
         }
     }
 
@@ -81,16 +78,7 @@ class CropIwaImageView extends ImageView {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         if (hasImageSize()) {
-            if (getMeasuredWidth() < getMeasuredHeight()) {
-                imageWidth = getMeasuredWidth();
-                imageHeight = (getRealImageHeight() * imageWidth) / getRealImageWidth();
-            } else {
-                imageHeight = getMeasuredHeight();
-                imageWidth = (getRealImageWidth() * imageHeight) / getRealImageHeight();
-            }
-            defaultScale = imageWidth / getRealImageWidth();
-            imageMatrix.postScale(defaultScale, defaultScale);
-            setImageMatrix(imageMatrix);
+            updateImageBounds();
         }
     }
 
@@ -105,11 +93,11 @@ class CropIwaImageView extends ImageView {
     }
 
     public int getImageWidth() {
-        return imageWidth;
+        return (int) imageBounds.width();
     }
 
     public int getImageHeight() {
-        return imageHeight;
+        return (int) imageBounds.height();
     }
 
     public boolean hasImageSize() {
@@ -131,14 +119,48 @@ class CropIwaImageView extends ImageView {
                 matrixValuesOut[Matrix.MSCALE_Y]);
     }
 
-    private float getCurrentXTranslation() {
-        imageMatrix.getValues(matrixValuesOut);
-        return matrixValuesOut[Matrix.MTRANS_X];
+    @Override
+    public void onNewBounds(RectF bounds) {
+        allowedBounds.set(bounds);
+        moveToAllowedBounds();
+        updateImageBounds();
+        invalidate();
     }
 
-    private float getCurrentYTranslation() {
-        imageMatrix.getValues(matrixValuesOut);
-        return matrixValuesOut[Matrix.MTRANS_Y];
+    private void moveToAllowedBounds() {
+        RectF realImageBounds = new RectF();
+        setToRealImageBounds(realImageBounds);
+        imageMatrix.set(MatrixUtils.findTransformToAllowedBounds(
+                realImageBounds, imageMatrix,
+                allowedBounds));
+        setImageMatrix(imageMatrix);
+    }
+
+    private void scaleImage(float factor) {
+        scaleImage(factor, imageBounds.centerX(), imageBounds.centerY());
+    }
+
+    private void scaleImage(float factor, float pivotX, float pivotY) {
+        imageMatrix.postScale(factor, factor, pivotX, pivotY);
+        setImageMatrix(imageMatrix);
+        updateImageBounds();
+    }
+
+    private void translateImage(float deltaX, float deltaY) {
+        imageMatrix.postTranslate(deltaX, deltaY);
+        setImageMatrix(imageMatrix);
+        if (deltaX > 0.01f || deltaY > 0.01f) {
+            updateImageBounds();
+        }
+    }
+
+    private void updateImageBounds() {
+        setToRealImageBounds(imageBounds);
+        imageMatrix.mapRect(imageBounds);
+    }
+
+    private void setToRealImageBounds(RectF rectF) {
+        rectF.set(0, 0, getRealImageWidth(), getRealImageHeight());
     }
 
     private class ScaleGestureListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
@@ -146,19 +168,15 @@ class CropIwaImageView extends ImageView {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
             float scaleFactor = detector.getScaleFactor();
-            if (isScaleAllowed(scaleFactor)) {
-                imageMatrix.postScale(scaleFactor, scaleFactor,
-                        detector.getFocusX(),
-                        detector.getFocusY());
-                setImageMatrix(imageMatrix);
-                invalidate();
+            float newScale = getCurrentScale() * scaleFactor;
+            if (isValidScale(newScale)) {
+                scaleImage(scaleFactor, detector.getFocusX(), detector.getFocusY());
             }
             return true;
         }
 
-        private boolean isScaleAllowed(float factor) {
-            float newScale = getCurrentScale() * factor;
-            return newScale >= (defaultScale) && newScale <= (defaultScale + MAX_SCALE);
+        private boolean isValidScale(float newScale) {
+            return newScale >= defaultScale && newScale <= (defaultScale + MAX_SCALE);
         }
     }
 
@@ -166,6 +184,7 @@ class CropIwaImageView extends ImageView {
 
         private float prevX;
         private float prevY;
+        private float id;
 
         @Override
         public boolean onDown(MotionEvent e) {
@@ -175,33 +194,39 @@ class CropIwaImageView extends ImageView {
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            if (e2.getPointerId(0) != id) return false;
+
+            updateImageBounds();
+
             float deltaX = getDeltaWithBoundCheck(
-                    e2.getX() - prevX, getCurrentXTranslation(),
-                    getWidth() - getRealImageWidth());
+                    e2.getX() - prevX, imageBounds.left, imageBounds.right,
+                    allowedBounds.left, allowedBounds.right);
             float deltaY = getDeltaWithBoundCheck(
-                    e2.getY() - prevY, getCurrentYTranslation(),
-                    getHeight() - getRealImageHeight());
-            imageMatrix.postTranslate(deltaX, deltaY);
-            setImageMatrix(imageMatrix);
+                    e2.getY() - prevY, imageBounds.top, imageBounds.bottom,
+                    allowedBounds.top, allowedBounds.bottom);
+
+            translateImage(deltaX, deltaY);
             saveCoordinates(e2);
+
             return true;
         }
 
         private void saveCoordinates(MotionEvent event) {
             prevX = event.getX();
             prevY = event.getY();
+            id = event.getPointerId(0);
         }
 
-        private float getDeltaWithBoundCheck(float delta, float translation, float bound) {
-//            float scaledBound = bound * getCurrentScale();
-//            float newValue = translation + delta;
-//            if (newValue < 0) {
-//                return -translation;
-//            } else if (newValue > scaledBound) {
-//                return scaledBound - translation;
-//            } else {
-            return delta;
+        private float getDeltaWithBoundCheck(
+                float delta, float lower, float upper,
+                float lowerAllowed, float upperAllowed) {
+            if (lower + delta > lowerAllowed) {
+                return lowerAllowed - lower;
+            } else if (upper + delta < upperAllowed) {
+                return upperAllowed - upper;
+            } else {
+                return delta;
+            }
         }
     }
-
 }

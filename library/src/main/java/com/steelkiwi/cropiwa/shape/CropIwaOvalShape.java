@@ -8,6 +8,7 @@ import android.graphics.RectF;
 import android.graphics.Xfermode;
 
 import com.steelkiwi.cropiwa.config.CropIwaOverlayConfig;
+import com.steelkiwi.cropiwa.util.CropIwaLog;
 
 /**
  * Created by yarolegovich on 04.02.2017.
@@ -15,11 +16,8 @@ import com.steelkiwi.cropiwa.config.CropIwaOverlayConfig;
 
 public class CropIwaOvalShape extends CropIwaShape {
 
-    private Xfermode gridXFermode;
-
     public CropIwaOvalShape(CropIwaOverlayConfig config) {
         super(config);
-        gridXFermode = new PorterDuffXfermode(PorterDuff.Mode.DST_ATOP);
     }
 
     @Override
@@ -37,8 +35,7 @@ public class CropIwaOvalShape extends CropIwaShape {
 
     @Override
     protected void drawGrid(Canvas canvas, RectF cropBounds, Paint paint) {
-        paint.setXfermode(gridXFermode);
-        super.drawGrid(canvas, cropBounds, paint);
-        paint.setXfermode(null);
+        CropIwaLog.d("grid is not supported for CropIwaOvalShape yet...");
+        //Temporarily not supported
     }
 }
