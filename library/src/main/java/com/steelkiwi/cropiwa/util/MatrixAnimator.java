@@ -72,27 +72,6 @@ public class MatrixAnimator {
             lastEnd = end;
         }
     }
-
-    private static class RectEvaluator implements TypeEvaluator<RectF> {
-
-        private FloatEvaluator evaluator;
-        private RectF current;
-
-        public RectEvaluator() {
-            evaluator = new FloatEvaluator();
-            current = new RectF();
-        }
-
-        @Override
-        public RectF evaluate(float fraction, RectF startValue, RectF endValue) {
-            current.left = evaluator.evaluate(fraction, startValue.left, endValue.left);
-            current.right = current.left + startValue.width();
-            current.top = evaluator.evaluate(fraction, startValue.top, endValue.top);
-            current.bottom = current.top + startValue.height();
-            return current;
-        }
-    }
-
     private static class SafeListener implements ValueAnimator.AnimatorUpdateListener {
 
         private WeakReference<ValueAnimator.AnimatorUpdateListener> wrapped;
