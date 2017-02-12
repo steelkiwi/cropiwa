@@ -11,7 +11,8 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.widget.FrameLayout;
 
-import com.steelkiwi.cropiwa.customization.CropIwaOverlayConfig;
+import com.steelkiwi.cropiwa.config.CropIwaOverlayConfig;
+
 
 /**
  * @author Yaroslav Polyakov https://github.com/polyak01
@@ -56,7 +57,9 @@ public class CropIwaView extends FrameLayout {
         addView(imageView);
 
         overlayConfig = CropIwaOverlayConfig.createDefault(getContext());
-        overlayView = new CropIwaOverlayView(getContext(), overlayConfig);
+        overlayView = overlayConfig.isDynamicCrop() ?
+                new CropIwaDynamicOverlayView(getContext(), overlayConfig) :
+                new CropIwaOverlayView(getContext(), overlayConfig);
         LayoutParams params = generateDefaultLayoutParams();
         params.gravity = Gravity.CENTER;
         overlayView.setLayoutParams(params);

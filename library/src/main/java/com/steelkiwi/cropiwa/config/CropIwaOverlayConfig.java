@@ -1,13 +1,12 @@
-package com.steelkiwi.cropiwa.customization;
+package com.steelkiwi.cropiwa.config;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.view.View;
 
 import com.steelkiwi.cropiwa.R;
-import com.steelkiwi.cropiwa.customization.shape.CropIwaCircleShape;
-import com.steelkiwi.cropiwa.customization.shape.CropIwaRectShape;
-import com.steelkiwi.cropiwa.customization.shape.CropIwaShape;
+import com.steelkiwi.cropiwa.shape.CropIwaOvalShape;
+import com.steelkiwi.cropiwa.shape.CropIwaShape;
 import com.steelkiwi.cropiwa.util.ResUtil;
 
 /**
@@ -15,14 +14,13 @@ import com.steelkiwi.cropiwa.util.ResUtil;
  * 04.02.2017.
  */
 public class CropIwaOverlayConfig {
-
     //Default size of crop area in percents
     private static final int DEFAULT_INITIAL_HEIGHT = 50;
     private static final int DEFAULT_INITIAL_WIDTH = 50;
 
     public static CropIwaOverlayConfig createDefault(Context context) {
         ResUtil r = new ResUtil(context);
-        return new CropIwaOverlayConfig()
+        CropIwaOverlayConfig config = new CropIwaOverlayConfig()
                 .setBorderColor(r.color(R.color.cropiwa_default_border_color))
                 .setCornerColor(r.color(R.color.cropiwa_default_corner_color))
                 .setGridColor(r.color(R.color.cropiwa_default_grid_color))
@@ -35,7 +33,10 @@ public class CropIwaOverlayConfig {
                 .setMinWidth(r.dimen(R.dimen.cropiwa_default_min_width))
                 .setMinHeight(r.dimen(R.dimen.cropiwa_default_min_height))
                 .setShouldDrawGrid(true)
-                .setCropShape(new CropIwaRectShape());
+                .setDynamicCrop(true);
+        CropIwaShape shape = new CropIwaOvalShape(config);
+        config.setCropShape(shape);
+        return config;
     }
 
     private int overlayColor;
@@ -53,7 +54,9 @@ public class CropIwaOverlayConfig {
     private int initialHeight;
     private int initialWidth;
 
+    private boolean isDynamicCrop;
     private boolean shouldDrawGrid;
+    private boolean shouldDrawCorners;
     private CropIwaShape cropShape;
 
     private View overlayView;
@@ -108,6 +111,10 @@ public class CropIwaOverlayConfig {
 
     public CropIwaShape getCropShape() {
         return cropShape;
+    }
+
+    public boolean isDynamicCrop() {
+        return isDynamicCrop;
     }
 
     public CropIwaOverlayConfig setOverlayColor(int overlayColor) {
@@ -172,6 +179,16 @@ public class CropIwaOverlayConfig {
 
     public CropIwaOverlayConfig setCropShape(@NonNull CropIwaShape cropShape) {
         this.cropShape = cropShape;
+        return this;
+    }
+
+    public CropIwaOverlayConfig setDynamicCrop(boolean enabled) {
+        this.isDynamicCrop = enabled;
+        return this;
+    }
+
+    public CropIwaOverlayConfig setDrawCorners(boolean enabled) {
+        this.shouldDrawCorners = enabled;
         return this;
     }
 
