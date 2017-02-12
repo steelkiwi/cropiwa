@@ -29,7 +29,7 @@ public class CropIwaOverlayConfig {
                 .setGridStrokeWidth(r.dimen(R.dimen.cropiwa_default_grid_stroke_width))
                 .setMinWidth(r.dimen(R.dimen.cropiwa_default_min_width))
                 .setMinHeight(r.dimen(R.dimen.cropiwa_default_min_height))
-                .setAspectRatio(new AspectRatio(9, 16))
+                .setAspectRatio(new AspectRatio(1, 1))
                 .setShouldDrawGrid(true)
                 .setDynamicCrop(false);
         CropIwaShape shape = new CropIwaRectShape(config);

@@ -1,5 +1,6 @@
 package com.steelkiwi.cropiwa;
 
+import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Matrix;
@@ -12,6 +13,7 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.widget.ImageView;
 
+import com.steelkiwi.cropiwa.util.MatrixAnimator;
 import com.steelkiwi.cropiwa.util.MatrixUtils;
 
 /**
@@ -21,7 +23,7 @@ import com.steelkiwi.cropiwa.util.MatrixUtils;
 class CropIwaImageView extends ImageView implements OnNewBoundsListener {
 
     private static final float MAX_SCALE = 3f;
-    private static final float MIN_SCALE = 1f;
+    private static final float MIN_SCALE = 0.7f;
 
     private Matrix imageMatrix;
     private ScaleGestureDetector scaleGestureDetector;
@@ -29,10 +31,9 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
 
     private RectF allowedBounds;
     private RectF imageBounds;
+    private RectF realImageBounds;
 
-    private float[] matrixValuesOut;
-
-    private float defaultScale = 1f;
+    private MatrixUtils matrixUtils;
 
     public CropIwaImageView(Context context) {
         super(context);
@@ -51,14 +52,14 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
 
-
     {
         setImageResource(R.drawable.default_image);
 
         imageBounds = new RectF();
         allowedBounds = new RectF();
+        realImageBounds = new RectF();
 
-        matrixValuesOut = new float[9];
+        matrixUtils = new MatrixUtils();
 
         imageMatrix = new Matrix();
         setScaleType(ScaleType.MATRIX);
@@ -114,13 +115,6 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
         return translationDetector;
     }
 
-    private float getCurrentScale() {
-        imageMatrix.getValues(matrixValuesOut);
-        return (float) Math.hypot(
-                matrixValuesOut[Matrix.MSCALE_X],
-                matrixValuesOut[Matrix.MSCALE_Y]);
-    }
-
     @Override
     public void onNewBounds(RectF bounds) {
         allowedBounds.set(bounds);
@@ -130,16 +124,27 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
     }
 
     private void moveToAllowedBounds() {
-        RectF realImageBounds = new RectF();
-        setToRealImageBounds(realImageBounds);
+        updateImageBounds();
         imageMatrix.set(MatrixUtils.findTransformToAllowedBounds(
                 realImageBounds, imageMatrix,
                 allowedBounds));
         setImageMatrix(imageMatrix);
     }
 
-    private void scaleImage(float factor) {
-        scaleImage(factor, imageBounds.centerX(), imageBounds.centerY());
+    private void animateToAllowedBounds() {
+        Matrix endMatrix = MatrixUtils.findTransformToAllowedBounds(
+                realImageBounds, imageMatrix,
+                allowedBounds);
+        MatrixAnimator animator = new MatrixAnimator();
+        animator.animate(imageMatrix, endMatrix, new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                imageMatrix.set((Matrix) animation.getAnimatedValue());
+                setImageMatrix(imageMatrix);
+                updateImageBounds();
+                invalidate();
+            }
+        });
     }
 
     private void scaleImage(float factor, float pivotX, float pivotY) {
@@ -157,12 +162,9 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
     }
 
     private void updateImageBounds() {
-        setToRealImageBounds(imageBounds);
+        realImageBounds.set(0, 0, getRealImageWidth(), getRealImageHeight());
+        imageBounds.set(realImageBounds);
         imageMatrix.mapRect(imageBounds);
-    }
-
-    private void setToRealImageBounds(RectF rectF) {
-        rectF.set(0, 0, getRealImageWidth(), getRealImageHeight());
     }
 
     private class ScaleGestureListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
@@ -170,15 +172,20 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
             float scaleFactor = detector.getScaleFactor();
-            float newScale = getCurrentScale() * scaleFactor;
+            float newScale = matrixUtils.getScaleX(imageMatrix) * scaleFactor;
             if (isValidScale(newScale)) {
                 scaleImage(scaleFactor, detector.getFocusX(), detector.getFocusY());
             }
             return true;
         }
 
+        @Override
+        public void onScaleEnd(ScaleGestureDetector detector) {
+            animateToAllowedBounds();
+        }
+
         private boolean isValidScale(float newScale) {
-            return newScale >= defaultScale && newScale <= (defaultScale + MAX_SCALE);
+            return newScale >= MIN_SCALE && newScale <= (MIN_SCALE + MAX_SCALE);
         }
     }
 
@@ -231,4 +238,5 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
             }
         }
     }
+
 }
