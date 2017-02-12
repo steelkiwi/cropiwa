@@ -15,6 +15,7 @@ import android.widget.ImageView;
 
 import com.steelkiwi.cropiwa.util.MatrixAnimator;
 import com.steelkiwi.cropiwa.util.MatrixUtils;
+import com.steelkiwi.cropiwa.util.TensionInterpolator;
 
 /**
  * @author Yaroslav Polyakov https://github.com/polyak01
@@ -26,8 +27,7 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
     private static final float MIN_SCALE = 0.7f;
 
     private Matrix imageMatrix;
-    private ScaleGestureDetector scaleGestureDetector;
-    private GestureDetector translationDetector;
+    private GestureDetector gestureDetector;
 
     private RectF allowedBounds;
     private RectF imageBounds;
@@ -64,8 +64,7 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
         imageMatrix = new Matrix();
         setScaleType(ScaleType.MATRIX);
 
-        scaleGestureDetector = new ScaleGestureDetector(getContext(), new ScaleGestureListener());
-        translationDetector = new GestureDetector(getContext(), new TranslationGestureListener());
+        gestureDetector = new GestureDetector();
     }
 
     @Override
@@ -107,12 +106,8 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
         return getImageWidth() != -1 && getImageHeight() != -1;
     }
 
-    public ScaleGestureDetector getScaleDetector() {
-        return scaleGestureDetector;
-    }
-
-    public GestureDetector getTranslationDetector() {
-        return translationDetector;
+    public GestureDetector getImageTransformGestureDetector() {
+        return gestureDetector;
     }
 
     @Override
@@ -147,13 +142,13 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
         });
     }
 
-    private void scaleImage(float factor, float pivotX, float pivotY) {
+    public void scaleImage(float factor, float pivotX, float pivotY) {
         imageMatrix.postScale(factor, factor, pivotX, pivotY);
         setImageMatrix(imageMatrix);
         updateImageBounds();
     }
 
-    private void translateImage(float deltaX, float deltaY) {
+    public void translateImage(float deltaX, float deltaY) {
         imageMatrix.postTranslate(deltaX, deltaY);
         setImageMatrix(imageMatrix);
         if (deltaX > 0.01f || deltaY > 0.01f) {
@@ -167,6 +162,7 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
         imageMatrix.mapRect(imageBounds);
     }
 
+
     private class ScaleGestureListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
 
         @Override
@@ -179,24 +175,23 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
             return true;
         }
 
-        @Override
-        public void onScaleEnd(ScaleGestureDetector detector) {
-            animateToAllowedBounds();
-        }
-
         private boolean isValidScale(float newScale) {
             return newScale >= MIN_SCALE && newScale <= (MIN_SCALE + MAX_SCALE);
         }
     }
 
-    private class TranslationGestureListener extends GestureDetector.SimpleOnGestureListener {
+    private class TranslationGestureListener extends android.view.GestureDetector.SimpleOnGestureListener {
 
         private float prevX;
         private float prevY;
         private float id;
 
+        private TensionInterpolator interpolator = new TensionInterpolator();
+
         @Override
         public boolean onDown(MotionEvent e) {
+            updateImageBounds();
+            interpolator.onDown(e.getX(), e.getY(), imageBounds, allowedBounds);
             saveCoordinates(e);
             return true;
         }
@@ -207,15 +202,14 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
 
             updateImageBounds();
 
-            float deltaX = getDeltaWithBoundCheck(
-                    e2.getX() - prevX, imageBounds.left, imageBounds.right,
-                    allowedBounds.left, allowedBounds.right);
-            float deltaY = getDeltaWithBoundCheck(
-                    e2.getY() - prevY, imageBounds.top, imageBounds.bottom,
-                    allowedBounds.top, allowedBounds.bottom);
+            float currentX = interpolator.interpolateX(e2.getX());
+            float currentY = interpolator.interpolateY(e2.getY());
 
-            translateImage(deltaX, deltaY);
+            translateImage(currentX - prevX, currentY - prevY);
             saveCoordinates(e2);
+
+            prevX = currentX;
+            prevY = currentY;
 
             return true;
         }
@@ -225,18 +219,31 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
             prevY = event.getY();
             id = event.getPointerId(0);
         }
+    }
 
-        private float getDeltaWithBoundCheck(
-                float delta, float lower, float upper,
-                float lowerAllowed, float upperAllowed) {
-            if (lower + delta > lowerAllowed) {
-                return lowerAllowed - lower;
-            } else if (upper + delta < upperAllowed) {
-                return upperAllowed - upper;
-            } else {
-                return delta;
+    public class GestureDetector {
+
+        private android.view.GestureDetector translationDetector;
+        private ScaleGestureDetector scaleDetector;
+
+        public GestureDetector() {
+            translationDetector = new android.view.GestureDetector(getContext(), new TranslationGestureListener());
+            scaleDetector = new ScaleGestureDetector(getContext(), new ScaleGestureListener());
+        }
+
+        public void onTouchEvent(MotionEvent event) {
+            scaleDetector.onTouchEvent(event);
+
+            if (!scaleDetector.isInProgress()) {
+                translationDetector.onTouchEvent(event);
+            }
+
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_CANCEL:
+                case MotionEvent.ACTION_UP:
+                    animateToAllowedBounds();
+                    break;
             }
         }
     }
-
 }

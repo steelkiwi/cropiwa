@@ -18,7 +18,6 @@ import com.steelkiwi.cropiwa.shape.CropIwaShape;
 @SuppressLint("ViewConstructor")
 class CropIwaOverlayView extends View {
 
-
     private Paint overlayPaint;
     private OnNewBoundsListener newBoundsListener;
 
@@ -48,22 +47,27 @@ class CropIwaOverlayView extends View {
         super.onSizeChanged(w, h, oldw, oldh);
         if (w != oldw || h != oldh) {
             float centerX = w * 0.5f, centerY = h * 0.5f;
-            //Initial width/height are in percents of view's width and height
             float halfWidth, halfHeight;
-            if (w < h) {
+            AspectRatio aspectRatio = config.getAspectRatio();
+
+            boolean calculateFromWidth = aspectRatio.getHeight() < aspectRatio.getWidth()
+                    || (aspectRatio.getWidth() == aspectRatio.getHeight() && w < h);
+
+            if (calculateFromWidth) {
                 halfWidth = w * 0.8f * 0.5f;
                 halfHeight = halfWidth / config.getAspectRatio().getRatio();
             } else {
-                halfHeight = w * 0.8f * 0.5f;
+                halfHeight = h * 0.8f * 0.5f;
                 halfWidth = halfHeight * config.getAspectRatio().getRatio();
             }
+
             cropRect.set(
                     centerX - halfWidth, centerY - halfHeight,
                     centerX + halfWidth, centerY + halfHeight);
+
             notifyNewBounds();
         }
     }
-
 
 
     @Override
@@ -104,6 +108,4 @@ class CropIwaOverlayView extends View {
     public void setNewBoundsListener(OnNewBoundsListener newBoundsListener) {
         this.newBoundsListener = newBoundsListener;
     }
-
-
 }

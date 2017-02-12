@@ -19,13 +19,13 @@ import com.steelkiwi.cropiwa.config.CropIwaOverlayConfig;
  * 03.02.2017.
  */
 public class CropIwaView extends FrameLayout {
+
     private CropIwaImageView imageView;
     private CropIwaOverlayView overlayView;
 
     private CropIwaOverlayConfig overlayConfig;
 
-    private ScaleGestureDetector scaleDetector;
-    private GestureDetector translationDetector;
+    private CropIwaImageView.GestureDetector gestureDetector;
 
     public CropIwaView(Context context) {
         super(context);
@@ -51,8 +51,7 @@ public class CropIwaView extends FrameLayout {
     private void init(AttributeSet attrs) {
         imageView = new CropIwaImageView(getContext());
         imageView.setBackgroundColor(Color.BLACK);
-        scaleDetector = imageView.getScaleDetector();
-        translationDetector = imageView.getTranslationDetector();
+        gestureDetector = imageView.getImageTransformGestureDetector();
         addView(imageView);
 
         overlayConfig = CropIwaOverlayConfig.createDefault(getContext());
@@ -77,17 +76,13 @@ public class CropIwaView extends FrameLayout {
             return false;
         }
         ev.setAction(MotionEvent.ACTION_DOWN);
-        scaleDetector.onTouchEvent(ev);
-        translationDetector.onTouchEvent(ev);
+        gestureDetector.onTouchEvent(ev);
         return true;
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        scaleDetector.onTouchEvent(event);
-        if (!scaleDetector.isInProgress()) {
-            translationDetector.onTouchEvent(event);
-        }
+        gestureDetector.onTouchEvent(event);
         return super.onTouchEvent(event);
     }
 

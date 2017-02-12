@@ -38,39 +38,33 @@ public class MatrixUtils {
         Matrix transform = new Matrix();
         transform.set(initialTransform);
 
-        RectF bounds = new RectF();
-        transformInitial(initialBounds, transform, bounds);
+        RectF current = new RectF(initial);
+        transform.mapRect(current);
 
         if (allowedBounds.width() > allowedBounds.height()) {
-            if (bounds.width() < allowedBounds.width()) {
-                float scale = allowedBounds.width() / bounds.width();
-                scale(initialBounds, scale, transform, bounds);
+            if (current.width() < allowedBounds.width()) {
+                float scale = allowedBounds.width() / current.width();
+                scale(initialBounds, scale, transform, current);
             }
         } else {
-            if (bounds.height() < allowedBounds.height()) {
-                float scale = allowedBounds.height() / bounds.height();
-                scale(initialBounds, scale, transform, bounds);
+            if (current.height() < allowedBounds.height()) {
+                float scale = allowedBounds.height() / current.height();
+                scale(initialBounds, scale, transform, current);
             }
         }
 
-        if (Math.abs(bounds.left - allowedBounds.left) < Math.abs(bounds.right - allowedBounds.right)) {
-            if (bounds.left > allowedBounds.left) {
-                translate(initialBounds, allowedBounds.left - bounds.left, 0, transform, bounds);
-            }
-        } else {
-            if (bounds.right < allowedBounds.right) {
-                translate(initialBounds, allowedBounds.right - bounds.right, 0, transform, bounds);
-            }
+        if (current.left > allowedBounds.left) {
+            translate(initialBounds, allowedBounds.left - current.left, 0, transform, current);
+        }
+        if (current.right < allowedBounds.right) {
+            translate(initialBounds, allowedBounds.right - current.right, 0, transform, current);
         }
 
-        if (Math.abs(bounds.top - allowedBounds.top) < Math.abs(bounds.bottom - allowedBounds.bottom)) {
-            if (bounds.top > allowedBounds.top) {
-                translate(initialBounds, 0, allowedBounds.top - bounds.top, transform, bounds);
-            }
-        } else {
-            if (bounds.bottom < allowedBounds.bottom) {
-                translate(initialBounds, 0, allowedBounds.bottom - bounds.bottom, transform, bounds);
-            }
+        if (current.top > allowedBounds.top) {
+            translate(initialBounds, 0, allowedBounds.top - current.top, transform, current);
+        }
+        if (current.bottom < allowedBounds.bottom) {
+            translate(initialBounds, 0, allowedBounds.bottom - current.bottom, transform, current);
         }
 
         return transform;
@@ -90,6 +84,5 @@ public class MatrixUtils {
         outRect.set(initial);
         transform.mapRect(outRect);
     }
-
 
 }
