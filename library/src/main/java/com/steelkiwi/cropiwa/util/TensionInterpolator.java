@@ -10,9 +10,10 @@ import android.view.animation.Interpolator;
 
 public class TensionInterpolator {
 
-    private static final float TENSION_ZONE = CropIwaUtils.dpToPx(40);
     private static final float TENSION_FACTOR = 10f;
-    private static final float TENSION_ZONE_PULL = TENSION_ZONE * TENSION_FACTOR;
+
+    private float tensionZone;
+    private float tensionZonePull;
 
     private TensionBorder yTensionBounds;
     private TensionBorder xTensionBounds;
@@ -24,6 +25,10 @@ public class TensionInterpolator {
     public void onDown(float x, float y, RectF draggedObj, RectF tensionStartBorder) {
         downX = x;
         downY = y;
+
+        tensionZone = Math.min(tensionStartBorder.width(), tensionStartBorder.height()) * 0.2f;
+        tensionZonePull = tensionZone * TENSION_FACTOR;
+
         xTensionBounds = new TensionBorder(
                 draggedObj.right - tensionStartBorder.right,
                 tensionStartBorder.left - draggedObj.left);
@@ -53,16 +58,16 @@ public class TensionInterpolator {
         }
 
         float tensionDiff = distance - tensionStart;
-        float tensionEnd = tensionStart + TENSION_ZONE;
+        float tensionEnd = tensionStart + tensionZone;
 
-        if (distance >= (TENSION_ZONE_PULL + tensionStart)) {
+        if (distance >= (tensionZonePull + tensionStart)) {
             return tensionEnd * direction;
         }
 
-        float realProgress = tensionDiff / TENSION_ZONE_PULL;
+        float realProgress = tensionDiff / tensionZonePull;
         float progress = interpolator.getInterpolation(realProgress);
 
-        return (tensionStart + progress * TENSION_ZONE) * direction;
+        return (tensionStart + progress * tensionZone) * direction;
     }
 
     private static class TensionBorder {
