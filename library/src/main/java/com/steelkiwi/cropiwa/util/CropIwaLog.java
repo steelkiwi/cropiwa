@@ -8,7 +8,7 @@ import android.util.Log;
 
 public class CropIwaLog {
 
-    private static final String LOG_TAG = "CropIwaLog";
+    private static final String LOG_TAG = CropIwaLog.class.getSimpleName();
 
     private static boolean LOG_ON = true;
 
@@ -24,7 +24,8 @@ public class CropIwaLog {
         }
     }
 
-    public static void setLog(boolean enabled) {
+    public static void setEnabled(boolean enabled) {
         LOG_ON = enabled;
     }
+
 }

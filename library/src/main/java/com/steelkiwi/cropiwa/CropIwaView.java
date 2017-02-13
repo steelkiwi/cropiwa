@@ -25,7 +25,7 @@ public class CropIwaView extends FrameLayout {
 
     private CropIwaOverlayConfig overlayConfig;
 
-    private CropIwaImageView.GestureDetector gestureDetector;
+    private CropIwaImageView.GestureProcessor gestureDetector;
 
     public CropIwaView(Context context) {
         super(context);
@@ -70,13 +70,12 @@ public class CropIwaView extends FrameLayout {
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         //I think this "redundant" if statements improve code readability
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            gestureDetector.onDown(ev);
             return false;
         }
         if (overlayView.isResizing() || overlayView.isDraggingCropArea()) {
             return false;
         }
-        ev.setAction(MotionEvent.ACTION_DOWN);
-        gestureDetector.onTouchEvent(ev);
         return true;
     }
 

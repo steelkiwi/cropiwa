@@ -3,6 +3,7 @@ package com.steelkiwi.cropiwa;
 import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
@@ -27,13 +28,15 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
     private static final float MIN_SCALE = 0.7f;
 
     private Matrix imageMatrix;
-    private GestureDetector gestureDetector;
+    private GestureProcessor gestureDetector;
 
     private RectF allowedBounds;
     private RectF imageBounds;
     private RectF realImageBounds;
 
     private MatrixUtils matrixUtils;
+
+    private boolean isOnScreen;
 
     public CropIwaImageView(Context context) {
         super(context);
@@ -64,7 +67,7 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
         imageMatrix = new Matrix();
         setScaleType(ScaleType.MATRIX);
 
-        gestureDetector = new GestureDetector();
+        gestureDetector = new GestureProcessor();
     }
 
     @Override
@@ -106,14 +109,24 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
         return getImageWidth() != -1 && getImageHeight() != -1;
     }
 
-    public GestureDetector getImageTransformGestureDetector() {
+    public GestureProcessor getImageTransformGestureDetector() {
         return gestureDetector;
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        isOnScreen = true;
     }
 
     @Override
     public void onNewBounds(RectF bounds) {
         allowedBounds.set(bounds);
-        moveToAllowedBounds();
+        if (isOnScreen) {
+            animateToAllowedBounds();
+        } else {
+            moveToAllowedBounds();
+        }
         updateImageBounds();
         invalidate();
     }
@@ -127,6 +140,7 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
     }
 
     private void animateToAllowedBounds() {
+        updateImageBounds();
         Matrix endMatrix = MatrixUtils.findTransformToAllowedBounds(
                 realImageBounds, imageMatrix,
                 allowedBounds);
@@ -142,13 +156,13 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
         });
     }
 
-    public void scaleImage(float factor, float pivotX, float pivotY) {
+    private void scaleImage(float factor, float pivotX, float pivotY) {
         imageMatrix.postScale(factor, factor, pivotX, pivotY);
         setImageMatrix(imageMatrix);
         updateImageBounds();
     }
 
-    public void translateImage(float deltaX, float deltaY) {
+    private void translateImage(float deltaX, float deltaY) {
         imageMatrix.postTranslate(deltaX, deltaY);
         setImageMatrix(imageMatrix);
         if (deltaX > 0.01f || deltaY > 0.01f) {
@@ -180,70 +194,78 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
         }
     }
 
-    private class TranslationGestureListener extends android.view.GestureDetector.SimpleOnGestureListener {
+    private class TranslationGestureListener {
 
         private float prevX;
         private float prevY;
-        private float id;
+        private int id;
 
         private TensionInterpolator interpolator = new TensionInterpolator();
 
-        @Override
-        public boolean onDown(MotionEvent e) {
+        public void onDown(MotionEvent e) {
             updateImageBounds();
             interpolator.onDown(e.getX(), e.getY(), imageBounds, allowedBounds);
-            saveCoordinates(e);
-            return true;
+            saveCoordinates(e.getX(), e.getY(), e.getPointerId(0));
         }
 
-        @Override
-        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            if (e2.getPointerId(0) != id) return false;
+        public void onTouchEvent(MotionEvent e) {
+            if (e.getAction() != MotionEvent.ACTION_MOVE) {
+                return;
+            }
+            if (e.getPointerId(0) != id) {
+                return;
+            }
 
             updateImageBounds();
 
-            float currentX = interpolator.interpolateX(e2.getX());
-            float currentY = interpolator.interpolateY(e2.getY());
+            float currentX = interpolator.interpolateX(e.getX());
+            float currentY = interpolator.interpolateY(e.getY());
 
             translateImage(currentX - prevX, currentY - prevY);
-            saveCoordinates(e2);
-
-            prevX = currentX;
-            prevY = currentY;
-
-            return true;
+            saveCoordinates(currentX, currentY);
         }
 
-        private void saveCoordinates(MotionEvent event) {
-            prevX = event.getX();
-            prevY = event.getY();
-            id = event.getPointerId(0);
+        private void saveCoordinates(float x, float y) {
+            saveCoordinates(x, y, id);
+        }
+
+        private void saveCoordinates(float x, float y, int id) {
+            this.prevX = x;
+            this.prevY = y;
+            this.id = id;
         }
     }
 
-    public class GestureDetector {
+    public class GestureProcessor {
 
-        private android.view.GestureDetector translationDetector;
         private ScaleGestureDetector scaleDetector;
+        private TranslationGestureListener translationGestureListener;
 
-        public GestureDetector() {
-            translationDetector = new android.view.GestureDetector(getContext(), new TranslationGestureListener());
+        public GestureProcessor() {
             scaleDetector = new ScaleGestureDetector(getContext(), new ScaleGestureListener());
+            translationGestureListener = new TranslationGestureListener();
+        }
+
+        public void onDown(MotionEvent event) {
+            translationGestureListener.onDown(event);
         }
 
         public void onTouchEvent(MotionEvent event) {
-            scaleDetector.onTouchEvent(event);
-
-            if (!scaleDetector.isInProgress()) {
-                translationDetector.onTouchEvent(event);
-            }
-
             switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+
+                    return;
                 case MotionEvent.ACTION_CANCEL:
                 case MotionEvent.ACTION_UP:
                     animateToAllowedBounds();
-                    break;
+                    return;
+            }
+            scaleDetector.onTouchEvent(event);
+
+            if (!scaleDetector.isInProgress()) {
+                translationGestureListener.onTouchEvent(event);
             }
         }
     }
+
 }

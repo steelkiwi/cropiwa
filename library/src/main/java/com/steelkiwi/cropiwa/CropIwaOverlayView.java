@@ -10,6 +10,7 @@ import android.view.View;
 
 import com.steelkiwi.cropiwa.config.CropIwaOverlayConfig;
 import com.steelkiwi.cropiwa.shape.CropIwaShape;
+import com.steelkiwi.cropiwa.util.CropIwaLog;
 
 /**
  * @author Yaroslav Polyakov https://github.com/polyak01
@@ -93,6 +94,7 @@ class CropIwaOverlayView extends View {
         if (newBoundsListener != null) {
             //Do not allow client code to modify our cropRect!
             RectF rect = new RectF(cropRect);
+            CropIwaLog.d("passing rect = " + cropRect + ", " + rect);
             newBoundsListener.onNewBounds(rect);
         }
     }

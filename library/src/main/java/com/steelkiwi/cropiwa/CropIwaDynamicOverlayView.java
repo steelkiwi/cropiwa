@@ -20,7 +20,6 @@ import static com.steelkiwi.cropiwa.util.CropIwaUtils.moveRectBounded;
  * @author yarolegovich
  * on 05.02.2017.
  */
-
 @SuppressLint("ViewConstructor")
 public class CropIwaDynamicOverlayView extends CropIwaOverlayView {
 
@@ -94,7 +93,9 @@ public class CropIwaDynamicOverlayView extends CropIwaOverlayView {
             default:
                 return false;
         }
-        invalidate();
+        invalidate(
+                (int) cropRect.left, (int) cropRect.top,
+                (int) cropRect.right, (int) cropRect.bottom);
         return true;
     }
 
@@ -146,6 +147,12 @@ public class CropIwaDynamicOverlayView extends CropIwaOverlayView {
     }
 
     private void onEndGesture() {
+        if (cropRectBeforeDrag != null && !cropRectBeforeDrag.equals(cropRect)) {
+            notifyNewBounds();
+        }
+        if (fingerToCornerMapping.size() > 0) {
+            notifyNewBounds();
+        }
         fingerToCornerMapping.clear();
         cropDragStartPoint = null;
         cropRectBeforeDrag = null;
@@ -273,3 +280,4 @@ public class CropIwaDynamicOverlayView extends CropIwaOverlayView {
         return result;
     }
 }
+

@@ -10,6 +10,7 @@ import android.view.animation.Interpolator;
 
 public class TensionInterpolator {
 
+
     private static final float TENSION_FACTOR = 10f;
 
     private float tensionZone;
@@ -26,7 +27,7 @@ public class TensionInterpolator {
         downX = x;
         downY = y;
 
-        tensionZone = Math.min(tensionStartBorder.width(), tensionStartBorder.height()) * 0.2f;
+        tensionZone = Math.min(draggedObj.width(), draggedObj.height()) * 0.2f;
         tensionZonePull = tensionZone * TENSION_FACTOR;
 
         xTensionBounds = new TensionBorder(
@@ -87,7 +88,14 @@ public class TensionInterpolator {
         public float getPositiveTensionStart() {
             return positiveTensionStart;
         }
-    }
 
+        @Override
+        public String toString() {
+            return "TensionBorder{" +
+                    "negativeTensionStart=" + negativeTensionStart +
+                    ", positiveTensionStart=" + positiveTensionStart +
+                    '}';
+        }
+    }
 
 }
