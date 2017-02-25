@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
-import android.support.annotation.FloatRange;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -15,24 +14,18 @@ import android.widget.FrameLayout;
 import com.steelkiwi.cropiwa.config.CropIwaImageViewConfig;
 import com.steelkiwi.cropiwa.config.CropIwaOverlayConfig;
 import com.steelkiwi.cropiwa.config.CropIwaSaveConfig;
-import com.steelkiwi.cropiwa.image.BitmapLoader;
+import com.steelkiwi.cropiwa.image.CropIwaBitmapManager;
 import com.steelkiwi.cropiwa.image.LoadBitmapCommand;
 import com.steelkiwi.cropiwa.util.CropIwaLog;
-
-import java.io.File;
-import java.lang.ref.WeakReference;
 
 /**
  * Created by yarolegovich on 02.02.2017.
  */
 public class CropIwaView extends FrameLayout {
 
-    public static final int UNSPECIFIED = -1;
-
     /**
      * TODO:
      * 1. Add API:
-     * -Scale image and listen for scale change
      * -Rotate image
      * 2. Add ability to crop and save it...!!!
      * The last one is pretty important!
@@ -155,20 +148,24 @@ public class CropIwaView extends FrameLayout {
     }
 
     public void crop(CropIwaSaveConfig saveConfig) {
-
+        CropArea cropArea = CropArea.create(
+                imageView.getImageRect(),
+                imageView.getImageRect(),
+                overlayView.getCropRect());
+        CropIwaBitmapManager.get().crop(getContext(), cropArea, imageUri, saveConfig);
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         if (imageUri != null) {
-            BitmapLoader loader = BitmapLoader.get();
-            loader.unregisterListenerFor(imageUri);
-            loader.removeIfCached(imageUri);
+            CropIwaBitmapManager loader = CropIwaBitmapManager.get();
+            loader.unregisterLoadListenerFor(imageUri);
+            loader.scheduleRemoveIfCached(imageUri);
         }
     }
 
-    private class BitmapLoadListener implements BitmapLoader.BitmapLoadListener {
+    private class BitmapLoadListener implements CropIwaBitmapManager.BitmapLoadListener {
 
         private ErrorListener listener;
 

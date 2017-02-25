@@ -103,6 +103,10 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
         return false;
     }
 
+    public RectF getCropRect() {
+        return new RectF(cropRect);
+    }
+
     public void setNewBoundsListener(OnNewBoundsListener newBoundsListener) {
         this.newBoundsListener = newBoundsListener;
     }

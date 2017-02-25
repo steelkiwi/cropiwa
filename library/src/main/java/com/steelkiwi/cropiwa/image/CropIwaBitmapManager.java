@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 
+import com.steelkiwi.cropiwa.config.CropIwaSaveConfig;
 import com.steelkiwi.cropiwa.util.CropIwaLog;
 import com.steelkiwi.cropiwa.util.CropIwaUtils;
 
@@ -16,6 +17,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,33 +27,35 @@ import static com.steelkiwi.cropiwa.util.CropIwaUtils.*;
 
 /**
  * @author Yaroslav Polyakov https://github.com/polyak01
- * on 25.02.2017.
+ *         on 25.02.2017.
  */
 
-public class BitmapLoader {
+public class CropIwaBitmapManager {
 
-    private static final BitmapLoader INSTANCE = new BitmapLoader();
+    private static final CropIwaBitmapManager INSTANCE = new CropIwaBitmapManager();
 
-    public static BitmapLoader get() {
+    public static final int SIZE_UNSPECIFIED = -1;
+
+    public static CropIwaBitmapManager get() {
         return INSTANCE;
     }
 
     private Map<Uri, BitmapLoadListener> requestResultListeners;
     private Map<Uri, File> localCache;
 
-    private BitmapLoader() {
+    private CropIwaBitmapManager() {
         requestResultListeners = new HashMap<>();
         localCache = Collections.synchronizedMap(new HashMap<Uri, File>());
     }
 
     public void load(Context context, Uri uri, int width, int height, BitmapLoadListener listener) {
-        CropIwaLog.d("start loading request obtained: " + uri);
+        CropIwaLog.d("requesting to load " + uri);
         if (requestResultListeners.containsKey(uri)) {
             CropIwaLog.d("loading already in progress...");
             requestResultListeners.put(uri, listener);
             return;
         }
-        CropIwaLog.d("started loading...");
+        CropIwaLog.d("loading started...");
         requestResultListeners.put(uri, listener);
         LoadImageTask task = new LoadImageTask(
                 context.getApplicationContext(), uri,
@@ -59,29 +63,27 @@ public class BitmapLoader {
         task.execute();
     }
 
-    public void unregisterListenerFor(Uri uri) {
+    public void crop(Context context, CropArea cropArea, Uri uri, CropIwaSaveConfig saveConfig) {
+        CropImageTask cropTask = new CropImageTask(
+                context.getApplicationContext(),
+                cropArea, uri, saveConfig);
+        cropTask.execute();
+    }
+
+    public void unregisterLoadListenerFor(Uri uri) {
         if (requestResultListeners.containsKey(uri)) {
             requestResultListeners.put(uri, null);
         }
     }
 
-    public boolean isCached(Uri uri) {
-        return localCache.containsKey(uri);
-    }
-
-    public Uri getCached(Uri uri) {
-        return Uri.fromFile(localCache.get(uri));
-    }
-
-    public void removeIfCached(Uri uri) {
-        File file = localCache.remove(uri);
-        delete(file);
+    public void scheduleRemoveIfCached(Uri uri) {
+        delete(localCache.remove(uri));
     }
 
     private Bitmap loadToMemory(Context context, Uri uri, int width, int height) throws IOException {
         Bitmap result;
         Uri localResUri = uri;
-        if (isFromWeb(uri)) {
+        if (isWebUri(uri)) {
             File cached = localCache.get(uri);
             if (cached == null) {
                 cached = cacheLocally(context, uri);
@@ -89,12 +91,15 @@ public class BitmapLoader {
             }
             localResUri = Uri.fromFile(cached);
         }
-        BitmapFactory.Options options = getOptimalSizeOptions(context, localResUri, width, height);
-        CropIwaLog.d("inSampleSize=%d", options.inSampleSize);
+
+        BitmapFactory.Options options = null;
+        if (width != SIZE_UNSPECIFIED && height != SIZE_UNSPECIFIED) {
+            options = getOptimalSizeOptions(context, localResUri, width, height);
+        }
         InputStream is = context.getContentResolver().openInputStream(localResUri);
         result = BitmapFactory.decodeStream(is, null, options);
 
-        CropIwaLog.d("loaded image dimensions {width=%d, height=%d}",
+        CropIwaLog.d("loaded image with dimensions {width=%d, height=%d}",
                 result.getWidth(),
                 result.getHeight());
 
@@ -119,11 +124,11 @@ public class BitmapLoader {
             closeSilently(bis);
             closeSilently(bos);
         }
-        CropIwaLog.d("cb ached %s to %s", input.toString(), local.getAbsolutePath());
+        CropIwaLog.d("cached %s as %s", input.toString(), local.getAbsolutePath());
         return local;
     }
 
-    public static BitmapFactory.Options getOptimalSizeOptions(
+    private static BitmapFactory.Options getOptimalSizeOptions(
             Context context, Uri bitmapUri,
             int reqWidth, int reqHeight) throws FileNotFoundException {
         InputStream is = context.getContentResolver().openInputStream(bitmapUri);
@@ -138,16 +143,10 @@ public class BitmapLoader {
     private static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
         final int height = options.outHeight;
         final int width = options.outWidth;
-        CropIwaLog.d("{width=%d, height=%d}", width, height);
-        CropIwaLog.d("required {width=%d, height=%d}", reqWidth, reqHeight);
         int inSampleSize = 1;
         if (height > reqHeight || width > reqWidth) {
             final int halfHeight = height / 2;
             final int halfWidth = width / 2;
-            CropIwaLog.d("halfHeight / inSampleSize >= reqHeight <=> %d / %d >= %d (%d)", halfHeight,
-                    inSampleSize, reqHeight, halfWidth / inSampleSize);
-            CropIwaLog.d("halfWidth / inSampleSize >= reqWidth <=> %d / %d >= %d (%d)", halfWidth,
-                    inSampleSize, reqWidth, halfHeight / inSampleSize);
             while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
                 inSampleSize *= 2;
             }
@@ -155,7 +154,7 @@ public class BitmapLoader {
         return inSampleSize;
     }
 
-    private boolean isFromWeb(Uri uri) {
+    private boolean isWebUri(Uri uri) {
         String scheme = uri.getScheme();
         return "http".equals(scheme) || "https".equals(scheme);
     }
@@ -202,8 +201,50 @@ public class BitmapLoader {
             } else {
                 //There is no listener interested in this request, so nobody will take care of
                 //cached image.
-                removeIfCached(uri);
+                scheduleRemoveIfCached(uri);
             }
+        }
+    }
+
+    private class CropImageTask extends AsyncTask<Void, Void, Throwable> {
+
+        private Context context;
+        private CropArea cropArea;
+        private Uri srcUri;
+        private CropIwaSaveConfig saveConfig;
+
+        public CropImageTask(Context context, CropArea cropArea, Uri srcUri, CropIwaSaveConfig saveConfig) {
+            this.context = context;
+            this.cropArea = cropArea;
+            this.srcUri = srcUri;
+            this.saveConfig = saveConfig;
+        }
+
+        @Override
+        protected Throwable doInBackground(Void... params) {
+            try {
+                Bitmap bitmap = loadToMemory(
+                        context, srcUri, saveConfig.getWidth(),
+                        saveConfig.getHeight());
+
+                Bitmap cropped = cropArea.applyCropTo(bitmap);
+
+                Uri dst = saveConfig.getDstUri();
+                OutputStream os = context.getContentResolver().openOutputStream(dst);
+                cropped.compress(saveConfig.getCompressFormat(), saveConfig.getQuality(), os);
+                CropIwaUtils.closeSilently(os);
+
+                bitmap.recycle();
+                cropped.recycle();
+            } catch (IOException e) {
+                return e;
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Throwable throwable) {
+            super.onPostExecute(throwable);
         }
     }
 

@@ -8,34 +8,22 @@ import java.io.File;
 
 /**
  * @author Yaroslav Polyakov https://github.com/polyak01
- * 25.02.2017.
+ *         25.02.2017.
  */
 
 public class CropIwaSaveConfig {
 
-    public static final int SIZE_UNSPECIFIED = -1;
-
-    private Bitmap.Config bitmapConfig;
     private Bitmap.CompressFormat compressFormat;
     private int quality;
     private int width, height;
+    private Uri dstUri;
 
-    private File dstPath;
-
-    private OnCropErrorListener errorListener;
-    private OnCropSaveCompleteListener cropSaveCompleteListener;
-    private OnCropSaveToFileCompleteListener cropSaveToFileCompleteListener;
-
-    public CropIwaSaveConfig() {
-        this.bitmapConfig = Bitmap.Config.ARGB_8888;
+    public CropIwaSaveConfig(Uri dstPath) {
+        this.dstUri = dstPath;
         this.compressFormat = Bitmap.CompressFormat.PNG;
-        this.width = SIZE_UNSPECIFIED;
-        this.height = SIZE_UNSPECIFIED;
+        this.width = CropIwaBitmapManager.SIZE_UNSPECIFIED;
+        this.height = CropIwaBitmapManager.SIZE_UNSPECIFIED;
         this.quality = 90;
-    }
-
-    public Bitmap.Config getBitmapConfig() {
-        return bitmapConfig;
     }
 
     public Bitmap.CompressFormat getCompressFormat() {
@@ -54,37 +42,16 @@ public class CropIwaSaveConfig {
         return height;
     }
 
-    public boolean shouldSaveToFile() {
-        return dstPath != null;
-    }
-
-    public File getPath() {
-        return dstPath;
-    }
-
-    public OnCropSaveToFileCompleteListener getSaveToFileCompleteListener() {
-        return cropSaveToFileCompleteListener;
-    }
-
-    public OnCropSaveCompleteListener getSaveCompleteListener() {
-        return cropSaveCompleteListener;
-    }
-
-    public OnCropErrorListener getErrorListener() {
-        return errorListener;
+    public Uri getDstUri() {
+        return dstUri;
     }
 
     public static class Builder {
 
         private CropIwaSaveConfig saveConfig;
 
-        public Builder() {
-            saveConfig = new CropIwaSaveConfig();
-        }
-
-        public Builder setBitmapConfig(Bitmap.Config bitmapConfig) {
-            saveConfig.bitmapConfig = bitmapConfig;
-            return this;
+        public Builder(Uri dstPath) {
+            saveConfig = new CropIwaSaveConfig(dstPath);
         }
 
         public Builder setSize(int width, int height) {
@@ -103,23 +70,8 @@ public class CropIwaSaveConfig {
             return this;
         }
 
-        public Builder onError(OnCropErrorListener errorListener) {
-            saveConfig.errorListener = errorListener;
-            return this;
-        }
-
-        public Builder onCropComplete(OnCropSaveCompleteListener listener) {
-            saveConfig.cropSaveCompleteListener = listener;
-            return this;
-        }
-
-        public Builder onCropSaveComplete(OnCropSaveToFileCompleteListener listener) {
-            saveConfig.cropSaveToFileCompleteListener = listener;
-            return this;
-        }
-
-        public Builder saveToFile(File path) {
-            saveConfig.dstPath = path;
+        public Builder saveToFile(Uri uri) {
+            saveConfig.dstUri = uri;
             return this;
         }
 
@@ -128,17 +80,5 @@ public class CropIwaSaveConfig {
         }
     }
 
-
-    public interface OnCropErrorListener {
-        void onError(Throwable e);
-    }
-
-    public interface OnCropSaveCompleteListener {
-        void onCropComplete(Bitmap bitmap);
-    }
-
-    public interface OnCropSaveToFileCompleteListener {
-        void onCropComplete(Uri uri);
-    }
 
 }

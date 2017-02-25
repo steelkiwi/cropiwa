@@ -14,11 +14,11 @@ public class LoadBitmapCommand {
     private Uri uri;
     private int width;
     private int height;
-    private BitmapLoader.BitmapLoadListener loadListener;
+    private CropIwaBitmapManager.BitmapLoadListener loadListener;
 
     private boolean executed;
 
-    public LoadBitmapCommand(Uri uri, int width, int height, BitmapLoader.BitmapLoadListener loadListener) {
+    public LoadBitmapCommand(Uri uri, int width, int height, CropIwaBitmapManager.BitmapLoadListener loadListener) {
         this.uri = uri;
         this.width = width;
         this.height = height;
@@ -47,6 +47,6 @@ public class LoadBitmapCommand {
             return;
         }
         executed = true;
-        BitmapLoader.get().load(context, uri, width, height, loadListener);
+        CropIwaBitmapManager.get().load(context, uri, width, height, loadListener);
     }
 }

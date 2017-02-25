@@ -261,6 +261,11 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
         this.imagePositionedListener = imagePositionedListener;
     }
 
+    public RectF getImageRect() {
+        updateImageBounds();
+        return new RectF(imageBounds);
+    }
+
     private float getCurrentScalePercent() {
         return CropIwaUtils.boundValue(
                 0.01f + (matrixUtils.getScaleX(imageMatrix) - minScale) / (maxScale),
