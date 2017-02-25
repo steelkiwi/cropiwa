@@ -93,9 +93,9 @@ public class CropIwaDynamicOverlayView extends CropIwaOverlayView {
             default:
                 return false;
         }
-        invalidate(
-                (int) cropRect.left, (int) cropRect.top,
-                (int) cropRect.right, (int) cropRect.bottom);
+        invalidate();
+//                (int) cropRect.left, (int) cropRect.top,
+//                (int) cropRect.right, (int) cropRect.bottom);
         return true;
     }
 

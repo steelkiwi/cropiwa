@@ -13,6 +13,9 @@ import android.widget.FrameLayout;
 
 import com.steelkiwi.cropiwa.config.CropIwaOverlayConfig;
 import com.steelkiwi.cropiwa.config.CropIwaSaveConfig;
+import com.steelkiwi.cropiwa.image.BitmapLoader;
+import com.steelkiwi.cropiwa.image.LoadBitmapTask;
+import com.steelkiwi.cropiwa.util.CropIwaLog;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -29,9 +32,9 @@ public class CropIwaView extends FrameLayout {
      * 1. Downscale image, if it is larger than view
      * 2. Add ability to configure using xml
      * 3. Add API:
-     *      -Scale image and listen for scale change
-     *      -Rotate image
-     *      -Enable/disable gestures
+     * -Scale image and listen for scale change
+     * -Rotate image
+     * -Enable/disable gestures
      * 4. Clean everything, add important logs, double check
      * 5. Add ability to crop...
      * The last one is pretty important!
@@ -43,6 +46,9 @@ public class CropIwaView extends FrameLayout {
     private CropIwaOverlayConfig overlayConfig;
 
     private CropIwaImageView.GestureProcessor gestureDetector;
+
+    private Uri imageUri;
+    private LoadBitmapTask loadBitmapTask;
 
     public CropIwaView(Context context) {
         super(context);
@@ -83,6 +89,15 @@ public class CropIwaView extends FrameLayout {
     }
 
     @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        if (loadBitmapTask != null) {
+            loadBitmapTask.setDimensions(w, h);
+            loadBitmapTask.executeIfAllowed(getContext());
+        }
+    }
+
+    @Override
     @SuppressWarnings("RedundantIfStatement")
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         //I think this "redundant" if statements improve code readability
@@ -117,8 +132,59 @@ public class CropIwaView extends FrameLayout {
         return overlayConfig;
     }
 
+    public void setImageUri(Uri uri) {
+        setImageUri(uri, null);
+    }
+
+    public void setImageUri(Uri uri, BitmapLoadErrorListener listener) {
+        imageUri = uri;
+        loadBitmapTask = new LoadBitmapTask(
+                uri, getWidth(), getHeight(),
+                new BitmapLoadListener(listener));
+        loadBitmapTask.executeIfAllowed(getContext());
+    }
+
+    public void setImage(Bitmap bitmap) {
+        imageView.setImageBitmap(bitmap);
+    }
 
     public void crop(CropIwaSaveConfig saveConfig) {
 
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (imageUri != null) {
+            BitmapLoader loader = BitmapLoader.get();
+            loader.unregisterListenerFor(imageUri);
+            loader.removeIfCached(imageUri);
+        }
+    }
+
+    private class BitmapLoadListener implements BitmapLoader.BitmapLoadListener {
+
+        private BitmapLoadErrorListener listener;
+
+        private BitmapLoadListener(BitmapLoadErrorListener listener) {
+            this.listener = listener;
+        }
+
+        @Override
+        public void onBitmapLoaded(Uri imageUri, Bitmap bitmap) {
+            setImage(bitmap);
+        }
+
+        @Override
+        public void onLoadFailed(Throwable e) {
+            CropIwaLog.e("CropIwa Image loading from " + imageUri + " failed", e);
+            if (listener != null) {
+                listener.onError(e);
+            }
+        }
+    }
+
+    public interface BitmapLoadErrorListener {
+        void onError(Throwable e);
     }
 }

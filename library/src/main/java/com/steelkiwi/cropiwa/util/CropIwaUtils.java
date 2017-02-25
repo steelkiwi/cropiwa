@@ -3,7 +3,11 @@ package com.steelkiwi.cropiwa.util;
 import android.content.res.Resources;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
+
+import java.io.Closeable;
+import java.io.File;
 
 /**
  * @author Yaroslav Polyakov https://github.com/polyak01
@@ -11,6 +15,21 @@ import android.util.DisplayMetrics;
  */
 
 public abstract class CropIwaUtils {
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public static void delete(@Nullable File file) {
+        if (file != null) {
+            file.delete();
+        }
+    }
+
+    public static void closeSilently(@Nullable Closeable c) {
+        try {
+            if (c != null) {
+                c.close();
+            }
+        } catch (Exception e) { /* NOP */ }
+    }
 
     public static RectF enlargeRectBy(float value, @NonNull RectF outRect) {
         outRect.top -= value;

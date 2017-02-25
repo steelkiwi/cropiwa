@@ -56,8 +56,6 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
     }
 
     {
-        setImageResource(R.drawable.default_image);
-
         imageBounds = new RectF();
         allowedBounds = new RectF();
         realImageBounds = new RectF();
@@ -71,18 +69,10 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
     }
 
     @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        if (hasImageSize() && allowedBounds.width() != 0 && allowedBounds.height() != 0) {
-            moveToAllowedBounds();
-            updateImageBounds();
-        }
-    }
-
-    @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         if (hasImageSize()) {
+            moveToAllowedBounds();
             updateImageBounds();
         }
     }
@@ -106,7 +96,7 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
     }
 
     public boolean hasImageSize() {
-        return getImageWidth() != -1 && getImageHeight() != -1;
+        return getRealImageWidth() != -1 && getRealImageHeight() != -1;
     }
 
     public GestureProcessor getImageTransformGestureDetector() {
@@ -122,13 +112,15 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
     @Override
     public void onNewBounds(RectF bounds) {
         allowedBounds.set(bounds);
-        if (isOnScreen) {
-            animateToAllowedBounds();
-        } else {
-            moveToAllowedBounds();
+        if (hasImageSize()) {
+            if (isOnScreen) {
+                animateToAllowedBounds();
+            } else {
+                moveToAllowedBounds();
+            }
+            updateImageBounds();
+            invalidate();
         }
-        updateImageBounds();
-        invalidate();
     }
 
     private void moveToAllowedBounds() {
@@ -175,7 +167,6 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
         imageBounds.set(realImageBounds);
         imageMatrix.mapRect(imageBounds);
     }
-
 
     private class ScaleGestureListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
 
