@@ -9,7 +9,9 @@ import com.steelkiwi.cropiwa.CropIwaView;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static final String URL = "https://pp.vk.me/c637119/v637119751/248d1/6dd4IPXWwzI.jpg";
+    public static final String URL =
+            "http://mmd.ninjacdn.com/images/brandphotos/HighRes/Image7HighRes_9.jpg";
+            /* "https://pp.vk.me/c637119/v637119751/248d1/6dd4IPXWwzI.jpg"; */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

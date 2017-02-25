@@ -14,6 +14,7 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.widget.ImageView;
 
+import com.steelkiwi.cropiwa.util.CropIwaLog;
 import com.steelkiwi.cropiwa.util.MatrixAnimator;
 import com.steelkiwi.cropiwa.util.MatrixUtils;
 import com.steelkiwi.cropiwa.util.TensionInterpolator;
@@ -24,8 +25,11 @@ import com.steelkiwi.cropiwa.util.TensionInterpolator;
  */
 class CropIwaImageView extends ImageView implements OnNewBoundsListener {
 
-    private static final float MAX_SCALE = 3f;
-    private static final float MIN_SCALE = 0.7f;
+    private static final float DEFAULT_MAX_SCALE = 3f;
+    private static final float DEFAULT_MIN_SCALE = 0.7f;
+
+    private float maxScale;
+    private float minScale;
 
     private Matrix imageMatrix;
     private GestureProcessor gestureDetector;
@@ -66,15 +70,31 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
         setScaleType(ScaleType.MATRIX);
 
         gestureDetector = new GestureProcessor();
+
+        minScale = DEFAULT_MIN_SCALE;
+        maxScale = DEFAULT_MAX_SCALE;
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         if (hasImageSize()) {
+            downscaleImageToMatchViewBounds();
             moveToAllowedBounds();
             updateImageBounds();
         }
+    }
+
+    private void downscaleImageToMatchViewBounds() {
+        float viewWidth = getWidth(), viewHeight = getHeight();
+        if (getRealImageWidth() <= viewWidth && getRealImageHeight() <= viewHeight) {
+            return;
+        }
+        float scaleFactor = viewWidth < viewHeight ?
+                viewWidth / getRealImageWidth() :
+                viewHeight / getRealImageHeight();
+        minScale = scaleFactor * 0.8f;
+        scaleImage(scaleFactor);
     }
 
     private int getRealImageWidth() {
@@ -148,6 +168,10 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
         });
     }
 
+    private void scaleImage(float factor) {
+        scaleImage(factor, 0, 0);
+    }
+
     private void scaleImage(float factor, float pivotX, float pivotY) {
         imageMatrix.postScale(factor, factor, pivotX, pivotY);
         setImageMatrix(imageMatrix);
@@ -181,7 +205,8 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
         }
 
         private boolean isValidScale(float newScale) {
-            return newScale >= MIN_SCALE && newScale <= (MIN_SCALE + MAX_SCALE);
+            CropIwaLog.d("minScale=%.2f | newScale=%.2f | maxScale=%.2f", minScale, newScale, maxScale);
+            return newScale >= minScale && newScale <= (minScale + maxScale);
         }
     }
 

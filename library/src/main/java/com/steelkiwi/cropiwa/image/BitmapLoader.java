@@ -36,23 +36,23 @@ public class BitmapLoader {
         return INSTANCE;
     }
 
-    private Map<Uri, BitmapLoadListener> requests;
+    private Map<Uri, BitmapLoadListener> requestResultListeners;
     private Map<Uri, File> localCache;
 
     private BitmapLoader() {
-        requests = new HashMap<>();
+        requestResultListeners = new HashMap<>();
         localCache = Collections.synchronizedMap(new HashMap<Uri, File>());
     }
 
     public void load(Context context, Uri uri, int width, int height, BitmapLoadListener listener) {
         CropIwaLog.d("start loading request obtained: " + uri);
-        if (requests.containsKey(uri)) {
+        if (requestResultListeners.containsKey(uri)) {
             CropIwaLog.d("loading already in progress...");
-            requests.put(uri, listener);
+            requestResultListeners.put(uri, listener);
             return;
         }
         CropIwaLog.d("started loading...");
-        requests.put(uri, listener);
+        requestResultListeners.put(uri, listener);
         LoadImageTask task = new LoadImageTask(
                 context.getApplicationContext(), uri,
                 width, height);
@@ -60,8 +60,8 @@ public class BitmapLoader {
     }
 
     public void unregisterListenerFor(Uri uri) {
-        if (requests.containsKey(uri)) {
-            requests.put(uri, null);
+        if (requestResultListeners.containsKey(uri)) {
+            requestResultListeners.put(uri, null);
         }
     }
 
@@ -90,6 +90,7 @@ public class BitmapLoader {
             localResUri = Uri.fromFile(cached);
         }
         BitmapFactory.Options options = getOptimalSizeOptions(context, localResUri, width, height);
+        CropIwaLog.d("inSampleSize=%d", options.inSampleSize);
         InputStream is = context.getContentResolver().openInputStream(localResUri);
         result = BitmapFactory.decodeStream(is, null, options);
 
@@ -137,10 +138,16 @@ public class BitmapLoader {
     private static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
         final int height = options.outHeight;
         final int width = options.outWidth;
+        CropIwaLog.d("{width=%d, height=%d}", width, height);
+        CropIwaLog.d("required {width=%d, height=%d}", reqWidth, reqHeight);
         int inSampleSize = 1;
         if (height > reqHeight || width > reqWidth) {
             final int halfHeight = height / 2;
             final int halfWidth = width / 2;
+            CropIwaLog.d("halfHeight / inSampleSize >= reqHeight <=> %d / %d >= %d (%d)", halfHeight,
+                    inSampleSize, reqHeight, halfWidth / inSampleSize);
+            CropIwaLog.d("halfWidth / inSampleSize >= reqWidth <=> %d / %d >= %d (%d)", halfWidth,
+                    inSampleSize, reqWidth, halfHeight / inSampleSize);
             while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
                 inSampleSize *= 2;
             }
@@ -185,7 +192,7 @@ public class BitmapLoader {
 
         @Override
         protected void onPostExecute(Throwable e) {
-            BitmapLoadListener listener = requests.remove(uri);
+            BitmapLoadListener listener = requestResultListeners.remove(uri);
             if (listener != null) {
                 if (e != null) {
                     listener.onLoadFailed(e);

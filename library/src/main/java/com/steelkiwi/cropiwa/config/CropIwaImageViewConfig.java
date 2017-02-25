@@ -5,4 +5,8 @@ package com.steelkiwi.cropiwa.config;
  * 04.02.2017.
  */
 public class CropIwaImageViewConfig {
+
+    private float maxScale;
+    private boolean isScaleEnabled;
+
 }
