@@ -2,6 +2,7 @@ package com.steelkiwi.cropiwa.config;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.support.annotation.FloatRange;
 import android.util.AttributeSet;
 
 import com.steelkiwi.cropiwa.R;
@@ -17,6 +18,8 @@ public class CropIwaImageViewConfig {
 
     private static final float DEFAULT_MIN_SCALE = 0.7f;
     private static final float DEFAULT_MAX_SCALE = 3f;
+
+    public static final int SCALE_UNSPECIFIED = -1;
 
     public static CropIwaImageViewConfig createDefault() {
         return new CropIwaImageViewConfig()
@@ -53,12 +56,13 @@ public class CropIwaImageViewConfig {
     private boolean isScaleEnabled;
     private boolean isTranslationEnabled;
     private InitialPosition initialPosition;
-    private ScaleChangeListener scaleChangeListener;
+    private float scale;
 
     private List<ConfigChangeListener> configChangeListeners;
 
     public CropIwaImageViewConfig() {
         configChangeListeners = new ArrayList<>();
+        scale = SCALE_UNSPECIFIED;
     }
 
     public float getMaxScale() {
@@ -81,8 +85,8 @@ public class CropIwaImageViewConfig {
         return initialPosition;
     }
 
-    public ScaleChangeListener getScaleChangeListener() {
-        return scaleChangeListener;
+    public float getScale() {
+        return scale;
     }
 
     public CropIwaImageViewConfig setMaxScale(float maxScale) {
@@ -100,13 +104,13 @@ public class CropIwaImageViewConfig {
         return this;
     }
 
-    public CropIwaImageViewConfig setScaleChangeListener(ScaleChangeListener scaleChangeListener) {
-        this.scaleChangeListener = scaleChangeListener;
+    public CropIwaImageViewConfig setImageInitialPosition(InitialPosition initialPosition) {
+        this.initialPosition = initialPosition;
         return this;
     }
 
-    public CropIwaImageViewConfig setImageInitialPosition(InitialPosition initialPosition) {
-        this.initialPosition = initialPosition;
+    public CropIwaImageViewConfig setScale(@FloatRange(from = 0.01, to = 1f) float scale) {
+        this.scale = scale;
         return this;
     }
 
@@ -124,10 +128,6 @@ public class CropIwaImageViewConfig {
         for (ConfigChangeListener listener : configChangeListeners) {
             listener.onConfigChanged();
         }
-    }
-
-    public interface ScaleChangeListener {
-        void onScaleChanged(float scale);
     }
 
 }

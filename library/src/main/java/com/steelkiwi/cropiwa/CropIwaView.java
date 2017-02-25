@@ -27,17 +27,14 @@ import java.lang.ref.WeakReference;
  */
 public class CropIwaView extends FrameLayout {
 
-    private static final int SIZE_UNSPECIFIED = -1;
+    public static final int UNSPECIFIED = -1;
 
     /**
      * TODO:
-     * 1. Downscale image, if it is larger than view - DONE!
-     * 2. Add ability to configure using xml - DONE!
-     * 3. Add API:
+     * 1. Add API:
      * -Scale image and listen for scale change
      * -Rotate image
-     * -Enable/disable gestures - DONE!
-     * 4. Add ability to crop...
+     * 2. Add ability to crop and save it...!!!
      * The last one is pretty important!
      */
 
@@ -155,10 +152,6 @@ public class CropIwaView extends FrameLayout {
 
     public void setImage(Bitmap bitmap) {
         imageView.setImageBitmap(bitmap);
-    }
-
-    public void setImageScale(@FloatRange(from = 0.01f, to = 1f) float scale) {
-        imageView.setScale(scale);
     }
 
     public void crop(CropIwaSaveConfig saveConfig) {

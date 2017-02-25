@@ -33,19 +33,17 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
     private float minScale;
 
     private Matrix imageMatrix;
+    private MatrixUtils matrixUtils;
     private GestureProcessor gestureDetector;
 
     private RectF allowedBounds;
     private RectF imageBounds;
     private RectF realImageBounds;
 
-    private MatrixUtils matrixUtils;
-
     private boolean isOnScreen;
 
     private OnImagePositionedListener imagePositionedListener;
 
-    private CropIwaImageViewConfig.ScaleChangeListener scaleChangeListener;
     private CropIwaImageViewConfig config;
 
     public CropIwaImageView(Context context, CropIwaImageViewConfig config) {
@@ -57,7 +55,6 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
         config = c;
         config.addConfigChangeListener(this);
 
-        scaleChangeListener = c.getScaleChangeListener();
         maxScale = c.getMaxScale();
         minScale = c.getDefaultMinScale();
 
@@ -84,16 +81,20 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
 
     private void placeImageToInitialPosition() {
         updateImageBounds();
-        switch (config.getImageInitialPosition()) {
-            case CENTER_CROP:
-                resizeImageToFillTheView();
-                break;
-            case CENTER_INSIDE:
-                resizeImageToBeInsideTheView();
-                break;
-        }
         moveImageToTheCenter();
-
+        if (config.getScale() == CropIwaImageViewConfig.SCALE_UNSPECIFIED) {
+            switch (config.getImageInitialPosition()) {
+                case CENTER_CROP:
+                    resizeImageToFillTheView();
+                    break;
+                case CENTER_INSIDE:
+                    resizeImageToBeInsideTheView();
+                    break;
+            }
+            config.setScale(getCurrentScalePercent()).apply();
+        } else {
+            setScalePercent(config.getScale());
+        }
         if (imagePositionedListener != null) {
             RectF imageRect = new RectF(imageBounds);
             CropIwaUtils.constrainRectTo(0, 0, getWidth(), getHeight(), imageRect);
@@ -210,11 +211,14 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
         });
     }
 
-    public void setScale(@FloatRange(from = 0.01f, to = 1f) float percent) {
-        float desiredScale = minScale + (maxScale - minScale) * percent;
+    private void setScalePercent(@FloatRange(from = 0.01f, to = 1f) float percent) {
+        float desiredScale = (minScale + maxScale) * percent;
         float currentScale = matrixUtils.getScaleX(imageMatrix);
         float factor = desiredScale / currentScale;
+        CropIwaLog.d("scaling image by " + factor);
         scaleImage(factor);
+        invalidate();
+        CropIwaLog.d("was %.2f, now is %.2f", currentScale, matrixUtils.getScaleX(imageMatrix));
     }
 
     private void scaleImage(float factor) {
@@ -245,11 +249,22 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
     @Override
     public void onConfigChanged() {
         maxScale = config.getMaxScale();
-        scaleChangeListener = config.getScaleChangeListener();
+        CropIwaLog.d("config changed... scale = " + matrixUtils.getScaleX(imageMatrix));
+        if (Math.abs(getCurrentScalePercent() - config.getScale()) > 0.001f) {
+            CropIwaLog.d("scale was changed...");
+            setScalePercent(config.getScale());
+            invalidate();
+        }
     }
 
     public void setImagePositionedListener(OnImagePositionedListener imagePositionedListener) {
         this.imagePositionedListener = imagePositionedListener;
+    }
+
+    private float getCurrentScalePercent() {
+        return CropIwaUtils.boundValue(
+                0.01f + (matrixUtils.getScaleX(imageMatrix) - minScale) / (maxScale),
+                0.01f, 1f);
     }
 
     private class ScaleGestureListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
@@ -260,9 +275,7 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
             float newScale = matrixUtils.getScaleX(imageMatrix) * scaleFactor;
             if (isValidScale(newScale)) {
                 scaleImage(scaleFactor, detector.getFocusX(), detector.getFocusY());
-                if (scaleChangeListener != null) {
-                    scaleChangeListener.onScaleChanged(newScale / (maxScale - minScale));
-                }
+                config.setScale(getCurrentScalePercent()).apply();
             }
             return true;
         }

@@ -11,7 +11,6 @@ import android.view.View;
 import com.steelkiwi.cropiwa.config.ConfigChangeListener;
 import com.steelkiwi.cropiwa.config.CropIwaOverlayConfig;
 import com.steelkiwi.cropiwa.shape.CropIwaShape;
-import com.steelkiwi.cropiwa.util.CropIwaLog;
 
 /**
  * @author Yaroslav Polyakov https://github.com/polyak01
@@ -112,6 +111,8 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
     public void onConfigChanged() {
         overlayPaint.setColor(config.getOverlayColor());
         cropShape = config.getCropShape();
+        cropShape.onConfigChanged();
+        invalidate();
     }
 
 }

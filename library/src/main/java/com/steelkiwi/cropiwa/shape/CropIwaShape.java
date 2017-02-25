@@ -30,7 +30,6 @@ public abstract class CropIwaShape implements ConfigChangeListener {
 
     public CropIwaShape(CropIwaOverlayConfig config) {
         overlayConfig = config;
-        overlayConfig.addConfigChangeListener(this);
 
         clearPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         clearPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
