@@ -20,6 +20,19 @@ import com.steelkiwi.cropiwa.config.CropIwaOverlayConfig;
  */
 public class CropIwaView extends FrameLayout {
 
+    /**
+     * TODO:
+     * 1. Downscale image, if it is larger than view
+     * 2. Add ability to configure using xml
+     * 3. Add API:
+     *      -Scale image
+     *      -Rotate image
+     *      -Enable/disable gestures
+     * 4. Clean everything, add important logs, double check
+     * 5. Add ability to crop...
+     * The last one is pretty important!
+     */
+
     private CropIwaImageView imageView;
     private CropIwaOverlayView overlayView;
 

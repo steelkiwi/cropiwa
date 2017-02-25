@@ -94,7 +94,6 @@ class CropIwaOverlayView extends View {
         if (newBoundsListener != null) {
             //Do not allow client code to modify our cropRect!
             RectF rect = new RectF(cropRect);
-            CropIwaLog.d("passing rect = " + cropRect + ", " + rect);
             newBoundsListener.onNewBounds(rect);
         }
     }
