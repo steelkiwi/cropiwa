@@ -2,30 +2,34 @@ package com.steelkiwi.cropiwa;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
 import android.widget.FrameLayout;
 
 import com.steelkiwi.cropiwa.config.CropIwaOverlayConfig;
+import com.steelkiwi.cropiwa.config.CropIwaSaveConfig;
 
+import java.io.File;
+import java.lang.ref.WeakReference;
 
 /**
- * @author Yaroslav Polyakov https://github.com/polyak01
- * 03.02.2017.
+ * Created by yarolegovich on 02.02.2017.
  */
 public class CropIwaView extends FrameLayout {
+
+    private static final int UNSPECIFIED = -1;
 
     /**
      * TODO:
      * 1. Downscale image, if it is larger than view
      * 2. Add ability to configure using xml
      * 3. Add API:
-     *      -Scale image
+     *      -Scale image and listen for scale change
      *      -Rotate image
      *      -Enable/disable gestures
      * 4. Clean everything, add important logs, double check
@@ -113,7 +117,8 @@ public class CropIwaView extends FrameLayout {
         return overlayConfig;
     }
 
-    private int toExactSpec(int size) {
-        return MeasureSpec.makeMeasureSpec(size, MeasureSpec.EXACTLY);
+
+    public void crop(CropIwaSaveConfig saveConfig) {
+
     }
 }
