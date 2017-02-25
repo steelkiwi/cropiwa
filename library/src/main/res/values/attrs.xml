@@ -3,8 +3,8 @@
     <declare-styleable name="CropIwaView">
 
         <attr name="ci_scale_enabled" format="boolean" />
-        <attr name="ci_max_scale" format="float" />
         <attr name="ci_translation_enabled" format="boolean" />
+        <attr name="ci_max_scale" format="float" />
 
         <attr name="ci_border_width" format="dimension" />
         <attr name="ci_grid_width" format="dimension" />

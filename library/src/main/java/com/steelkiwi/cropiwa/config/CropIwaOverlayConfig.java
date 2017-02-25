@@ -22,7 +22,7 @@ import java.util.List;
  */
 public class CropIwaOverlayConfig {
 
-    static CropIwaOverlayConfig createDefault(Context context) {
+    public static CropIwaOverlayConfig createDefault(Context context) {
         ResUtil r = new ResUtil(context);
         CropIwaOverlayConfig config = new CropIwaOverlayConfig()
                 .setBorderColor(r.color(R.color.cropiwa_default_border_color))
@@ -236,8 +236,14 @@ public class CropIwaOverlayConfig {
         return this;
     }
 
-    public void addConfigChangeListener(ConfigChangeListener v) {
-        listeners.add(v);
+    public void addConfigChangeListener(ConfigChangeListener listener) {
+        if (listener != null) {
+            listeners.add(listener);
+        }
+    }
+
+    public void removeConfigChangeListener(ConfigChangeListener listener) {
+        listeners.remove(listener);
     }
 
     public void apply() {

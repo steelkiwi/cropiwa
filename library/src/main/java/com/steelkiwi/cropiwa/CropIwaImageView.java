@@ -8,12 +8,15 @@ import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.annotation.FloatRange;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.widget.ImageView;
 
+import com.steelkiwi.cropiwa.config.ConfigChangeListener;
+import com.steelkiwi.cropiwa.config.CropIwaImageViewConfig;
 import com.steelkiwi.cropiwa.util.CropIwaLog;
 import com.steelkiwi.cropiwa.util.MatrixAnimator;
 import com.steelkiwi.cropiwa.util.MatrixUtils;
@@ -23,10 +26,7 @@ import com.steelkiwi.cropiwa.util.TensionInterpolator;
  * @author Yaroslav Polyakov https://github.com/polyak01
  * 03.02.2017.
  */
-class CropIwaImageView extends ImageView implements OnNewBoundsListener {
-
-    private static final float DEFAULT_MAX_SCALE = 3f;
-    private static final float DEFAULT_MIN_SCALE = 0.7f;
+class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigChangeListener {
 
     private float maxScale;
     private float minScale;
@@ -42,24 +42,22 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
 
     private boolean isOnScreen;
 
-    public CropIwaImageView(Context context) {
+    private CropIwaImageViewConfig.ScaleChangeListener scaleChangeListener;
+    private CropIwaImageViewConfig config;
+
+    public CropIwaImageView(Context context, CropIwaImageViewConfig config) {
         super(context);
+        initWith(config);
     }
 
-    public CropIwaImageView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
+    private void initWith(CropIwaImageViewConfig c) {
+        config = c;
+        config.addConfigChangeListener(this);
 
-    public CropIwaImageView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-    }
+        scaleChangeListener = c.getScaleChangeListener();
+        maxScale = c.getMaxScale();
+        minScale = c.getDefaultMinScale();
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public CropIwaImageView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-    }
-
-    {
         imageBounds = new RectF();
         allowedBounds = new RectF();
         realImageBounds = new RectF();
@@ -70,9 +68,6 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
         setScaleType(ScaleType.MATRIX);
 
         gestureDetector = new GestureProcessor();
-
-        minScale = DEFAULT_MIN_SCALE;
-        maxScale = DEFAULT_MAX_SCALE;
     }
 
     @Override
@@ -168,6 +163,13 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
         });
     }
 
+    public void setScale(@FloatRange(from = 0.01f, to = 1f) float percent) {
+        float desiredScale = minScale + (maxScale - minScale) * percent;
+        float currentScale = matrixUtils.getScaleX(imageMatrix);
+        float factor = desiredScale / currentScale;
+        scaleImage(factor);
+    }
+
     private void scaleImage(float factor) {
         scaleImage(factor, 0, 0);
     }
@@ -192,6 +194,12 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
         imageMatrix.mapRect(imageBounds);
     }
 
+    @Override
+    public void onConfigChanged() {
+        maxScale = config.getMaxScale();
+        scaleChangeListener = config.getScaleChangeListener();
+    }
+
     private class ScaleGestureListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
 
         @Override
@@ -200,12 +208,14 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
             float newScale = matrixUtils.getScaleX(imageMatrix) * scaleFactor;
             if (isValidScale(newScale)) {
                 scaleImage(scaleFactor, detector.getFocusX(), detector.getFocusY());
+                if (scaleChangeListener != null) {
+                    scaleChangeListener.onScaleChanged(newScale / (maxScale - minScale));
+                }
             }
             return true;
         }
 
         private boolean isValidScale(float newScale) {
-            CropIwaLog.d("minScale=%.2f | newScale=%.2f | maxScale=%.2f", minScale, newScale, maxScale);
             return newScale >= minScale && newScale <= (minScale + maxScale);
         }
     }
@@ -269,16 +279,17 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener {
         public void onTouchEvent(MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-
                     return;
                 case MotionEvent.ACTION_CANCEL:
                 case MotionEvent.ACTION_UP:
                     animateToAllowedBounds();
                     return;
             }
-            scaleDetector.onTouchEvent(event);
+            if (config.isImageScaleEnabled()) {
+                scaleDetector.onTouchEvent(event);
+            }
 
-            if (!scaleDetector.isInProgress()) {
+            if (config.isImageTranslationEnabled() && !scaleDetector.isInProgress()) {
                 translationGestureListener.onTouchEvent(event);
             }
         }

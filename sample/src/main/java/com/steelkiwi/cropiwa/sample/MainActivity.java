@@ -20,5 +20,6 @@ public class MainActivity extends AppCompatActivity {
 
         CropIwaView cropIwaView = (CropIwaView) findViewById(R.id.crop);
         cropIwaView.setImageUri(Uri.parse(URL));
+        cropIwaView.setImageScale(1f);
     }
 }

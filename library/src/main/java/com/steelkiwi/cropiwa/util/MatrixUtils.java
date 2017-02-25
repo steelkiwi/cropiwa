@@ -41,16 +41,14 @@ public class MatrixUtils {
         RectF current = new RectF(initial);
         transform.mapRect(current);
 
-        if (allowedBounds.width() > allowedBounds.height()) {
-            if (current.width() < allowedBounds.width()) {
-                float scale = allowedBounds.width() / current.width();
-                scale(initialBounds, scale, transform, current);
-            }
-        } else {
-            if (current.height() < allowedBounds.height()) {
-                float scale = allowedBounds.height() / current.height();
-                scale(initialBounds, scale, transform, current);
-            }
+        if (current.width() < allowedBounds.width()) {
+            float scale = allowedBounds.width() / current.width();
+            scale(initialBounds, scale, transform, current);
+        }
+
+        if (current.height() < allowedBounds.height()) {
+            float scale = allowedBounds.height() / current.height();
+            scale(initialBounds, scale, transform, current);
         }
 
         if (current.left > allowedBounds.left) {
