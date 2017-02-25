@@ -15,7 +15,6 @@ import com.steelkiwi.cropiwa.config.CropIwaOverlayConfig;
  */
 public abstract class CropIwaShape {
 
-    private Path cornerPath;
 
     protected Paint clearPaint;
     protected Paint cornerPaint;
@@ -38,8 +37,6 @@ public abstract class CropIwaShape {
         cornerPaint.setColor(overlayConfig.getCornerColor());
         cornerPaint.setStyle(Paint.Style.STROKE);
         cornerPaint.setStrokeCap(Paint.Cap.ROUND);
-
-        cornerPath = new Path();
     }
 
     public final void draw(Canvas canvas, RectF cropBounds) {
@@ -57,12 +54,8 @@ public abstract class CropIwaShape {
     }
 
     public void drawCorner(Canvas canvas, float x, float y, float deltaX, float deltaY) {
-        cornerPath.rewind();
-        cornerPath.moveTo(x, y);
-        cornerPath.rLineTo(deltaX, 0);
-        cornerPath.moveTo(x, y);
-        cornerPath.rLineTo(0, deltaY);
-        canvas.drawPath(cornerPath, cornerPaint);
+        canvas.drawLine(x, y, x + deltaX, y, cornerPaint);
+        canvas.drawLine(x, y, x, y + deltaY, cornerPaint);
     }
 
     protected abstract void clearArea(Canvas canvas, RectF cropBounds, Paint clearPaint);
@@ -81,4 +74,5 @@ public abstract class CropIwaShape {
             canvas.drawLine(cropBounds.left, y, cropBounds.right, y, paint);
         }
     }
+
 }
