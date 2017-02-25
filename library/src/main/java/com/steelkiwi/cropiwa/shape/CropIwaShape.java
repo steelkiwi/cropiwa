@@ -50,10 +50,10 @@ public abstract class CropIwaShape implements ConfigChangeListener {
 
     public final void draw(Canvas canvas, RectF cropBounds) {
         clearArea(canvas, cropBounds, clearPaint);
-        drawBorders(canvas, cropBounds, borderPaint);
         if (overlayConfig.shouldDrawGrid()) {
             drawGrid(canvas, cropBounds, gridPaint);
         }
+        drawBorders(canvas, cropBounds, borderPaint);
     }
 
     public void drawCorner(Canvas canvas, float x, float y, float deltaX, float deltaY) {

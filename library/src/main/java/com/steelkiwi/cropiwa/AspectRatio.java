@@ -20,6 +20,10 @@ public class AspectRatio {
         return width;
     }
 
+    public boolean isSquare() {
+        return width == height;
+    }
+
     public int getHeight() {
         return height;
     }

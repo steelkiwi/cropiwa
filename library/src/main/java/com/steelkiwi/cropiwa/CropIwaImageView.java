@@ -18,6 +18,7 @@ import android.widget.ImageView;
 import com.steelkiwi.cropiwa.config.ConfigChangeListener;
 import com.steelkiwi.cropiwa.config.CropIwaImageViewConfig;
 import com.steelkiwi.cropiwa.util.CropIwaLog;
+import com.steelkiwi.cropiwa.util.CropIwaUtils;
 import com.steelkiwi.cropiwa.util.MatrixAnimator;
 import com.steelkiwi.cropiwa.util.MatrixUtils;
 import com.steelkiwi.cropiwa.util.TensionInterpolator;
@@ -41,6 +42,8 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
     private MatrixUtils matrixUtils;
 
     private boolean isOnScreen;
+
+    private OnImagePositionedListener imagePositionedListener;
 
     private CropIwaImageViewConfig.ScaleChangeListener scaleChangeListener;
     private CropIwaImageViewConfig config;
@@ -74,22 +77,66 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         if (hasImageSize()) {
-            downscaleImageToMatchViewBounds();
-            moveToAllowedBounds();
-            updateImageBounds();
+            minScale = calculateMinScale();
+            placeImageToInitialPosition();
         }
     }
 
-    private void downscaleImageToMatchViewBounds() {
+    private void placeImageToInitialPosition() {
+        updateImageBounds();
+        switch (config.getImageInitialPosition()) {
+            case CENTER_CROP:
+                resizeImageToFillTheView();
+                break;
+            case CENTER_INSIDE:
+                resizeImageToBeInsideTheView();
+                break;
+        }
+        moveImageToTheCenter();
+
+        if (imagePositionedListener != null) {
+            RectF imageRect = new RectF(imageBounds);
+            CropIwaUtils.constrainRectTo(0, 0, getWidth(), getHeight(), imageRect);
+            imagePositionedListener.onImagePositioned(imageRect);
+        }
+    }
+
+    private void resizeImageToFillTheView() {
+        float scale;
+        if (getWidth() < getHeight()) {
+            scale = ((float) getHeight()) / getImageHeight();
+        } else {
+            scale = ((float) getWidth()) / getImageWidth();
+        }
+        scaleImage(scale);
+    }
+
+    private void resizeImageToBeInsideTheView() {
+        float scale;
+        if (getImageWidth() < getImageHeight()) {
+            scale = ((float) getHeight()) / getImageHeight();
+        } else {
+            scale = ((float) getWidth()) / getImageWidth();
+        }
+        scaleImage(scale);
+    }
+
+    private void moveImageToTheCenter() {
+        updateImageBounds();
+        float deltaX = (getWidth() / 2f) - imageBounds.centerX();
+        float deltaY = (getHeight() / 2f) - imageBounds.centerY();
+        translateImage(deltaX, deltaY);
+    }
+
+    private float calculateMinScale() {
         float viewWidth = getWidth(), viewHeight = getHeight();
         if (getRealImageWidth() <= viewWidth && getRealImageHeight() <= viewHeight) {
-            return;
+            return config.getDefaultMinScale();
         }
         float scaleFactor = viewWidth < viewHeight ?
                 viewWidth / getRealImageWidth() :
                 viewHeight / getRealImageHeight();
-        minScale = scaleFactor * 0.8f;
-        scaleImage(scaleFactor);
+        return scaleFactor * 0.8f;
     }
 
     private int getRealImageWidth() {
@@ -171,7 +218,8 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
     }
 
     private void scaleImage(float factor) {
-        scaleImage(factor, 0, 0);
+        updateImageBounds();
+        scaleImage(factor, imageBounds.centerX(), imageBounds.centerY());
     }
 
     private void scaleImage(float factor, float pivotX, float pivotY) {
@@ -198,6 +246,10 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
     public void onConfigChanged() {
         maxScale = config.getMaxScale();
         scaleChangeListener = config.getScaleChangeListener();
+    }
+
+    public void setImagePositionedListener(OnImagePositionedListener imagePositionedListener) {
+        this.imagePositionedListener = imagePositionedListener;
     }
 
     private class ScaleGestureListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {

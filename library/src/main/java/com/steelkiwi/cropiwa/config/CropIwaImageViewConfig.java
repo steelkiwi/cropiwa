@@ -41,6 +41,8 @@ public class CropIwaImageViewConfig {
             config.setImageScaleEnabled(ta.getBoolean(
                     R.styleable.CropIwaView_ci_scale_enabled,
                     config.isImageScaleEnabled()));
+            config.setImageInitialPosition(InitialPosition.values()[
+                    ta.getInt(R.styleable.CropIwaView_ci_initial_position, 0)]);
         } finally {
             ta.recycle();
         }
@@ -50,6 +52,7 @@ public class CropIwaImageViewConfig {
     private float maxScale;
     private boolean isScaleEnabled;
     private boolean isTranslationEnabled;
+    private InitialPosition initialPosition;
     private ScaleChangeListener scaleChangeListener;
 
     private List<ConfigChangeListener> configChangeListeners;
@@ -74,6 +77,10 @@ public class CropIwaImageViewConfig {
         return isTranslationEnabled;
     }
 
+    public InitialPosition getImageInitialPosition() {
+        return initialPosition;
+    }
+
     public ScaleChangeListener getScaleChangeListener() {
         return scaleChangeListener;
     }
@@ -95,6 +102,11 @@ public class CropIwaImageViewConfig {
 
     public CropIwaImageViewConfig setScaleChangeListener(ScaleChangeListener scaleChangeListener) {
         this.scaleChangeListener = scaleChangeListener;
+        return this;
+    }
+
+    public CropIwaImageViewConfig setImageInitialPosition(InitialPosition initialPosition) {
+        this.initialPosition = initialPosition;
         return this;
     }
 

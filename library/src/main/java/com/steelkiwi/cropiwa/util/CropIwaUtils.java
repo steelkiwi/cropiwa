@@ -23,6 +23,12 @@ public abstract class CropIwaUtils {
         }
     }
 
+    public static void constrainRectTo(int minLeft, int minTop, int maxRight, int maxBottom, RectF rect) {
+        rect.set(
+                Math.max(rect.left, minLeft), Math.max(rect.top, minTop),
+                Math.min(rect.right, maxRight), Math.min(rect.bottom, maxBottom));
+    }
+
     public static void closeSilently(@Nullable Closeable c) {
         try {
             if (c != null) {

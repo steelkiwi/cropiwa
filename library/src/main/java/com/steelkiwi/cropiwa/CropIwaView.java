@@ -89,6 +89,8 @@ public class CropIwaView extends FrameLayout {
         params.gravity = Gravity.CENTER;
         overlayView.setLayoutParams(params);
         addView(overlayView);
+
+        imageView.setImagePositionedListener(overlayView);
     }
 
     @Override

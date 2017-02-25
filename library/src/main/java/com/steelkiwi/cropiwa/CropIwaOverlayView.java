@@ -18,7 +18,7 @@ import com.steelkiwi.cropiwa.util.CropIwaLog;
  * 03.02.2017.
  */
 @SuppressLint("ViewConstructor")
-class CropIwaOverlayView extends View implements ConfigChangeListener {
+class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePositionedListener {
 
     private Paint overlayPaint;
     private OnNewBoundsListener newBoundsListener;
@@ -48,32 +48,28 @@ class CropIwaOverlayView extends View implements ConfigChangeListener {
     }
 
     @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        if (w != oldw || h != oldh) {
-            float centerX = w * 0.5f, centerY = h * 0.5f;
-            float halfWidth, halfHeight;
-            AspectRatio aspectRatio = config.getAspectRatio();
+    public void onImagePositioned(RectF imageRect) {
+        float halfWidth, halfHeight;
+        AspectRatio aspectRatio = config.getAspectRatio();
 
-            boolean calculateFromWidth = aspectRatio.getHeight() < aspectRatio.getWidth()
-                    || (aspectRatio.getWidth() == aspectRatio.getHeight() && w < h);
+        boolean calculateFromWidth = aspectRatio.getHeight() < aspectRatio.getWidth()
+                || (aspectRatio.isSquare() && imageRect.width() < imageRect.height());
 
-            if (calculateFromWidth) {
-                halfWidth = w * 0.8f * 0.5f;
-                halfHeight = halfWidth / config.getAspectRatio().getRatio();
-            } else {
-                halfHeight = h * 0.8f * 0.5f;
-                halfWidth = halfHeight * config.getAspectRatio().getRatio();
-            }
-
-            cropRect.set(
-                    centerX - halfWidth, centerY - halfHeight,
-                    centerX + halfWidth, centerY + halfHeight);
-
-            notifyNewBounds();
+        if (calculateFromWidth) {
+            halfWidth = imageRect.width() * 0.8f * 0.5f;
+            halfHeight = halfWidth / config.getAspectRatio().getRatio();
+        } else {
+            halfHeight = imageRect.height() * 0.8f * 0.5f;
+            halfWidth = halfHeight * config.getAspectRatio().getRatio();
         }
-    }
 
+        cropRect.set(
+                imageRect.centerX() - halfWidth, imageRect.centerY() - halfHeight,
+                imageRect.centerX() + halfWidth, imageRect.centerY() + halfHeight);
+
+        notifyNewBounds();
+        invalidate();
+    }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -117,4 +113,5 @@ class CropIwaOverlayView extends View implements ConfigChangeListener {
         overlayPaint.setColor(config.getOverlayColor());
         cropShape = config.getCropShape();
     }
+
 }

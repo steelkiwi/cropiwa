@@ -53,11 +53,10 @@ class CropIwaDynamicOverlayView extends CropIwaOverlayView {
     }
 
     @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        if (w != oldw || h != oldh) {
-            initCornerPoints();
-        }
+    public void onImagePositioned(RectF imageRect) {
+        super.onImagePositioned(imageRect);
+        initCornerPoints();
+        invalidate();
     }
 
     private void initCornerPoints() {
@@ -94,6 +93,7 @@ class CropIwaDynamicOverlayView extends CropIwaOverlayView {
                 return false;
         }
         invalidate();
+//        invalidate(
 //                (int) cropRect.left, (int) cropRect.top,
 //                (int) cropRect.right, (int) cropRect.bottom);
         return true;
@@ -173,11 +173,13 @@ class CropIwaDynamicOverlayView extends CropIwaOverlayView {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        CropIwaShape shape = config.getCropShape();
-        for (int i = 0; i < cornerPoints.length; i++) {
-            shape.drawCorner(
-                    canvas, cornerPoints[i].x(), cornerPoints[i].y(),
-                    cornerSides[i][0], cornerSides[i][1]);
+        if (areCornersInitialized()) {
+            CropIwaShape shape = config.getCropShape();
+            for (int i = 0; i < cornerPoints.length; i++) {
+                shape.drawCorner(
+                        canvas, cornerPoints[i].x(), cornerPoints[i].y(),
+                        cornerSides[i][0], cornerSides[i][1]);
+            }
         }
     }
 
@@ -209,6 +211,10 @@ class CropIwaDynamicOverlayView extends CropIwaOverlayView {
             }
         }
         return false;
+    }
+
+    private boolean areCornersInitialized() {
+        return cornerPoints[0] != null;
     }
 
     private class CornerPoint {
