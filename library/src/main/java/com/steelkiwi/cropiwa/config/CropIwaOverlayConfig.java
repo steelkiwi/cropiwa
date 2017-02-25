@@ -1,7 +1,9 @@
 package com.steelkiwi.cropiwa.config;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.support.annotation.NonNull;
+import android.util.AttributeSet;
 import android.view.View;
 
 import com.steelkiwi.cropiwa.AspectRatio;
@@ -11,13 +13,16 @@ import com.steelkiwi.cropiwa.shape.CropIwaRectShape;
 import com.steelkiwi.cropiwa.shape.CropIwaShape;
 import com.steelkiwi.cropiwa.util.ResUtil;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author yarolegovich https://github.com/yarolegovich
  * 04.02.2017.
  */
 public class CropIwaOverlayConfig {
 
-    public static CropIwaOverlayConfig createDefault(Context context) {
+    static CropIwaOverlayConfig createDefault(Context context) {
         ResUtil r = new ResUtil(context);
         CropIwaOverlayConfig config = new CropIwaOverlayConfig()
                 .setBorderColor(r.color(R.color.cropiwa_default_border_color))
@@ -35,6 +40,58 @@ public class CropIwaOverlayConfig {
         CropIwaShape shape = new CropIwaRectShape(config);
         config.setCropShape(shape);
         return config;
+    }
+
+    public static CropIwaOverlayConfig createFromAttributes(Context context, AttributeSet attrs) {
+        CropIwaOverlayConfig c = CropIwaOverlayConfig.createDefault(context);
+        if (attrs == null) {
+            return c;
+        }
+        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.CropIwaView);
+        try {
+            c.setMinWidth(ta.getDimensionPixelSize(
+                    R.styleable.CropIwaView_ci_min_crop_width,
+                    c.getMinWidth()));
+            c.setMinHeight(ta.getDimensionPixelSize(
+                    R.styleable.CropIwaView_ci_min_crop_height,
+                    c.getMinHeight()));
+            c.setAspectRatio(new AspectRatio(
+                    ta.getInteger(R.styleable.CropIwaView_ci_aspect_ratio_w, 1),
+                    ta.getInteger(R.styleable.CropIwaView_ci_aspect_ratio_h, 1)));
+            c.setBorderColor(ta.getColor(
+                    R.styleable.CropIwaView_ci_border_color,
+                    c.getBorderColor()));
+            c.setBorderStrokeWidth(ta.getDimensionPixelSize(
+                    R.styleable.CropIwaView_ci_border_width,
+                    c.getBorderStrokeWidth()));
+            c.setCornerColor(ta.getColor(
+                    R.styleable.CropIwaView_ci_corner_color,
+                    c.getCornerColor()));
+            c.setCornerStrokeWidth(ta.getDimensionPixelSize(
+                    R.styleable.CropIwaView_ci_corner_width,
+                    c.getCornerStrokeWidth()));
+            c.setGridColor(ta.getColor(
+                    R.styleable.CropIwaView_ci_grid_color,
+                    c.getGridColor()));
+            c.setGridStrokeWidth(ta.getDimensionPixelSize(
+                    R.styleable.CropIwaView_ci_grid_width,
+                    c.getGridStrokeWidth()));
+            c.setShouldDrawGrid(ta.getBoolean(
+                    R.styleable.CropIwaView_ci_draw_grid,
+                    c.shouldDrawGrid()));
+            c.setOverlayColor(ta.getColor(
+                    R.styleable.CropIwaView_ci_overlay_color,
+                    c.getOverlayColor()));
+            c.setCropShape(ta.getInt(R.styleable.CropIwaView_ci_crop_shape, 0) == 0 ?
+                    new CropIwaRectShape(c) :
+                    new CropIwaOvalShape(c));
+            c.setDynamicCrop(ta.getBoolean(
+                    R.styleable.CropIwaView_ci_dynamic_aspect_ratio,
+                    c.isDynamicCrop()));
+        } finally {
+            ta.recycle();
+        }
+        return c;
     }
 
     private int overlayColor;
@@ -56,7 +113,11 @@ public class CropIwaOverlayConfig {
     private boolean shouldDrawGrid;
     private CropIwaShape cropShape;
 
-    private View overlayView;
+    private List<ConfigChangeListener> listeners;
+
+    public CropIwaOverlayConfig() {
+        listeners = new ArrayList<>();
+    }
 
     public int getOverlayColor() {
         return overlayColor;
@@ -175,13 +236,13 @@ public class CropIwaOverlayConfig {
         return this;
     }
 
-    public void setOverlayView(View v) {
-        overlayView = v;
+    public void addConfigChangeListener(ConfigChangeListener v) {
+        listeners.add(v);
     }
 
     public void apply() {
-        if (overlayView != null) {
-            overlayView.invalidate();
+        for (ConfigChangeListener listener : listeners) {
+            listener.onConfigChanged();
         }
     }
 }

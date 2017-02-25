@@ -8,6 +8,7 @@ import android.graphics.RectF;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.steelkiwi.cropiwa.config.ConfigChangeListener;
 import com.steelkiwi.cropiwa.config.CropIwaOverlayConfig;
 import com.steelkiwi.cropiwa.shape.CropIwaShape;
 import com.steelkiwi.cropiwa.util.CropIwaLog;
@@ -17,10 +18,11 @@ import com.steelkiwi.cropiwa.util.CropIwaLog;
  * 03.02.2017.
  */
 @SuppressLint("ViewConstructor")
-class CropIwaOverlayView extends View {
+class CropIwaOverlayView extends View implements ConfigChangeListener {
 
     private Paint overlayPaint;
     private OnNewBoundsListener newBoundsListener;
+    private CropIwaShape cropShape;
 
     protected RectF cropRect;
     protected CropIwaOverlayConfig config;
@@ -32,7 +34,9 @@ class CropIwaOverlayView extends View {
 
     protected void initWith(CropIwaOverlayConfig c) {
         config = c;
-        config.setOverlayView(this);
+        config.addConfigChangeListener(this);
+
+        cropShape = c.getCropShape();
 
         cropRect = new RectF();
 
@@ -85,8 +89,6 @@ class CropIwaOverlayView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         canvas.drawRect(0, 0, getWidth(), getHeight(), overlayPaint);
-
-        CropIwaShape cropShape = config.getCropShape();
         cropShape.draw(canvas, cropRect);
     }
 
@@ -108,5 +110,11 @@ class CropIwaOverlayView extends View {
 
     public void setNewBoundsListener(OnNewBoundsListener newBoundsListener) {
         this.newBoundsListener = newBoundsListener;
+    }
+
+    @Override
+    public void onConfigChanged() {
+        overlayPaint.setColor(config.getOverlayColor());
+        cropShape = config.getCropShape();
     }
 }

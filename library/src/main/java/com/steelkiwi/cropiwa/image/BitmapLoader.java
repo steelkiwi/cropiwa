@@ -21,6 +21,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.steelkiwi.cropiwa.util.CropIwaUtils.*;
+
 /**
  * @author Yaroslav Polyakov https://github.com/polyak01
  * on 25.02.2017.
@@ -43,13 +45,13 @@ public class BitmapLoader {
     }
 
     public void load(Context context, Uri uri, int width, int height, BitmapLoadListener listener) {
-        CropIwaLog.d("load request obtained: " + uri);
+        CropIwaLog.d("start loading request obtained: " + uri);
         if (requests.containsKey(uri)) {
-            CropIwaLog.d("load already in progress...");
+            CropIwaLog.d("loading already in progress...");
             requests.put(uri, listener);
             return;
         }
-        CropIwaLog.d("starting loading...");
+        CropIwaLog.d("started loading...");
         requests.put(uri, listener);
         LoadImageTask task = new LoadImageTask(
                 context.getApplicationContext(), uri,
@@ -73,7 +75,7 @@ public class BitmapLoader {
 
     public void removeIfCached(Uri uri) {
         File file = localCache.remove(uri);
-        CropIwaUtils.delete(file);
+        delete(file);
     }
 
     private Bitmap loadToMemory(Context context, Uri uri, int width, int height) throws IOException {
@@ -91,7 +93,7 @@ public class BitmapLoader {
         InputStream is = context.getContentResolver().openInputStream(localResUri);
         result = BitmapFactory.decodeStream(is, null, options);
 
-        CropIwaLog.d("Loaded image dimensions {width=%d, height=%d}",
+        CropIwaLog.d("loaded image dimensions {width=%d, height=%d}",
                 result.getWidth(),
                 result.getHeight());
 
@@ -113,10 +115,10 @@ public class BitmapLoader {
             }
             bos.flush();
         } finally {
-            CropIwaUtils.closeSilently(bis);
-            CropIwaUtils.closeSilently(bos);
+            closeSilently(bis);
+            closeSilently(bos);
         }
-        CropIwaLog.d("Cached %s to %s", input.toString(), local.getAbsolutePath());
+        CropIwaLog.d("cb ached %s to %s", input.toString(), local.getAbsolutePath());
         return local;
     }
 

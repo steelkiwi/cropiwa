@@ -7,49 +7,52 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 
+import com.steelkiwi.cropiwa.CropIwaView;
+import com.steelkiwi.cropiwa.config.ConfigChangeListener;
 import com.steelkiwi.cropiwa.config.CropIwaOverlayConfig;
 
 /**
  * @author yarolegovich https://github.com/yarolegovich
  * 06.02.2017.
  */
-public abstract class CropIwaShape {
+public abstract class CropIwaShape implements ConfigChangeListener {
 
-
-    protected Paint clearPaint;
-    protected Paint cornerPaint;
-    protected Paint paint;
+    private Paint clearPaint;
+    private Paint cornerPaint;
+    private Paint gridPaint;
+    private Paint borderPaint;
 
     protected CropIwaOverlayConfig overlayConfig;
 
+    public CropIwaShape(CropIwaView cropIwaView) {
+        this(cropIwaView.configureOverlay());
+    }
+
     public CropIwaShape(CropIwaOverlayConfig config) {
         overlayConfig = config;
+        overlayConfig.addConfigChangeListener(this);
 
         clearPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         clearPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
 
-        paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeCap(Paint.Cap.SQUARE);
+        gridPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        gridPaint.setStyle(Paint.Style.STROKE);
+        gridPaint.setStrokeCap(Paint.Cap.SQUARE);
+
+        borderPaint = new Paint(gridPaint);
 
         cornerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        cornerPaint.setStrokeWidth(overlayConfig.getCornerStrokeWidth());
-        cornerPaint.setColor(overlayConfig.getCornerColor());
         cornerPaint.setStyle(Paint.Style.STROKE);
         cornerPaint.setStrokeCap(Paint.Cap.ROUND);
+
+        updatePaintObjectsFromConfig();
     }
 
     public final void draw(Canvas canvas, RectF cropBounds) {
         clearArea(canvas, cropBounds, clearPaint);
-
-        paint.setStrokeWidth(overlayConfig.getBorderStrokeWidth());
-        paint.setColor(overlayConfig.getBorderColor());
-        drawBorders(canvas, cropBounds, paint);
-
+        drawBorders(canvas, cropBounds, borderPaint);
         if (overlayConfig.shouldDrawGrid()) {
-            paint.setStrokeWidth(overlayConfig.getGridStrokeWidth());
-            paint.setColor(overlayConfig.getGridColor());
-            drawGrid(canvas, cropBounds, paint);
+            drawGrid(canvas, cropBounds, gridPaint);
         }
     }
 
@@ -75,4 +78,17 @@ public abstract class CropIwaShape {
         }
     }
 
+    @Override
+    public void onConfigChanged() {
+        updatePaintObjectsFromConfig();
+    }
+
+    private void updatePaintObjectsFromConfig() {
+        cornerPaint.setStrokeWidth(overlayConfig.getCornerStrokeWidth());
+        cornerPaint.setColor(overlayConfig.getCornerColor());
+        gridPaint.setColor(overlayConfig.getGridColor());
+        gridPaint.setStrokeWidth(overlayConfig.getGridStrokeWidth());
+        borderPaint.setColor(overlayConfig.getBorderColor());
+        borderPaint.setStrokeWidth(overlayConfig.getBorderStrokeWidth());
+    }
 }

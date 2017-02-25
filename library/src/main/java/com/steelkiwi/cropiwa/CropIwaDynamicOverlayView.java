@@ -21,7 +21,7 @@ import static com.steelkiwi.cropiwa.util.CropIwaUtils.moveRectBounded;
  * on 05.02.2017.
  */
 @SuppressLint("ViewConstructor")
-public class CropIwaDynamicOverlayView extends CropIwaOverlayView {
+class CropIwaDynamicOverlayView extends CropIwaOverlayView {
 
     private static final float CLICK_AREA_CORNER_POINT = dpToPx(24);
 

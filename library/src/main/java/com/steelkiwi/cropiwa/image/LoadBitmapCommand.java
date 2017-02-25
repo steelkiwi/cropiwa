@@ -9,7 +9,7 @@ import com.steelkiwi.cropiwa.util.CropIwaLog;
  * @author Yaroslav Polyakov https://github.com/polak01
  * on 25.02.2017.
  */
-public class LoadBitmapTask {
+public class LoadBitmapCommand {
 
     private Uri uri;
     private int width;
@@ -18,7 +18,7 @@ public class LoadBitmapTask {
 
     private boolean executed;
 
-    public LoadBitmapTask(Uri uri, int width, int height, BitmapLoader.BitmapLoadListener loadListener) {
+    public LoadBitmapCommand(Uri uri, int width, int height, BitmapLoader.BitmapLoadListener loadListener) {
         this.uri = uri;
         this.width = width;
         this.height = height;
@@ -35,13 +35,13 @@ public class LoadBitmapTask {
      * If we call .setImageUri(Uri) on {@link com.steelkiwi.cropiwa.CropIwaView} from onCreate
      * view won't know its width and height, so we need to delay image loading until onSizeChanged.
      */
-    public void executeIfAllowed(Context context) {
+    public void tryExecute(Context context) {
         if (executed) {
             return;
         }
         if (width == 0 || height == 0) {
             CropIwaLog.d(
-                    "LoadBitmapTask for %s delayed, wrong dimensions {width=%d, height=%d}",
+                    "LoadBitmapCommand for %s delayed, wrong dimensions {width=%d, height=%d}",
                     uri.toString(),
                     width, height);
             return;

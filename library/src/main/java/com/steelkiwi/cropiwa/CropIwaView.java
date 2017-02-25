@@ -14,7 +14,7 @@ import android.widget.FrameLayout;
 import com.steelkiwi.cropiwa.config.CropIwaOverlayConfig;
 import com.steelkiwi.cropiwa.config.CropIwaSaveConfig;
 import com.steelkiwi.cropiwa.image.BitmapLoader;
-import com.steelkiwi.cropiwa.image.LoadBitmapTask;
+import com.steelkiwi.cropiwa.image.LoadBitmapCommand;
 import com.steelkiwi.cropiwa.util.CropIwaLog;
 
 import java.io.File;
@@ -25,7 +25,7 @@ import java.lang.ref.WeakReference;
  */
 public class CropIwaView extends FrameLayout {
 
-    private static final int UNSPECIFIED = -1;
+    private static final int SIZE_UNSPECIFIED = -1;
 
     /**
      * TODO:
@@ -48,7 +48,7 @@ public class CropIwaView extends FrameLayout {
     private CropIwaImageView.GestureProcessor gestureDetector;
 
     private Uri imageUri;
-    private LoadBitmapTask loadBitmapTask;
+    private LoadBitmapCommand loadBitmapCommand;
 
     public CropIwaView(Context context) {
         super(context);
@@ -77,7 +77,7 @@ public class CropIwaView extends FrameLayout {
         gestureDetector = imageView.getImageTransformGestureDetector();
         addView(imageView);
 
-        overlayConfig = CropIwaOverlayConfig.createDefault(getContext());
+        overlayConfig = CropIwaOverlayConfig.createFromAttributes(getContext(), attrs);
         overlayView = overlayConfig.isDynamicCrop() ?
                 new CropIwaDynamicOverlayView(getContext(), overlayConfig) :
                 new CropIwaOverlayView(getContext(), overlayConfig);
@@ -91,9 +91,9 @@ public class CropIwaView extends FrameLayout {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        if (loadBitmapTask != null) {
-            loadBitmapTask.setDimensions(w, h);
-            loadBitmapTask.executeIfAllowed(getContext());
+        if (loadBitmapCommand != null) {
+            loadBitmapCommand.setDimensions(w, h);
+            loadBitmapCommand.tryExecute(getContext());
         }
     }
 
@@ -136,12 +136,12 @@ public class CropIwaView extends FrameLayout {
         setImageUri(uri, null);
     }
 
-    public void setImageUri(Uri uri, BitmapLoadErrorListener listener) {
+    public void setImageUri(Uri uri, ErrorListener listener) {
         imageUri = uri;
-        loadBitmapTask = new LoadBitmapTask(
+        loadBitmapCommand = new LoadBitmapCommand(
                 uri, getWidth(), getHeight(),
                 new BitmapLoadListener(listener));
-        loadBitmapTask.executeIfAllowed(getContext());
+        loadBitmapCommand.tryExecute(getContext());
     }
 
     public void setImage(Bitmap bitmap) {
@@ -164,9 +164,9 @@ public class CropIwaView extends FrameLayout {
 
     private class BitmapLoadListener implements BitmapLoader.BitmapLoadListener {
 
-        private BitmapLoadErrorListener listener;
+        private ErrorListener listener;
 
-        private BitmapLoadListener(BitmapLoadErrorListener listener) {
+        private BitmapLoadListener(ErrorListener listener) {
             this.listener = listener;
         }
 
@@ -184,7 +184,11 @@ public class CropIwaView extends FrameLayout {
         }
     }
 
-    public interface BitmapLoadErrorListener {
+    public interface CropSaveCompleteListener {
+        void onCroppedRegionSaved(Uri bitmapUri);
+    }
+
+    public interface ErrorListener {
         void onError(Throwable e);
     }
 }
