@@ -82,23 +82,23 @@ public class CropIwaSaveConfig {
             saveConfig = new CropIwaSaveConfig();
         }
 
-        public Builder withBitmapConfig(Bitmap.Config bitmapConfig) {
+        public Builder setBitmapConfig(Bitmap.Config bitmapConfig) {
             saveConfig.bitmapConfig = bitmapConfig;
             return this;
         }
 
-        public Builder withSize(int width, int height) {
+        public Builder setSize(int width, int height) {
             saveConfig.width = width;
             saveConfig.height = height;
             return this;
         }
 
-        public Builder withCompressFormat(Bitmap.CompressFormat compressFormat) {
+        public Builder setCompressFormat(Bitmap.CompressFormat compressFormat) {
             saveConfig.compressFormat = compressFormat;
             return this;
         }
 
-        public Builder withQuality(@IntRange(from = 0, to = 100) int quality) {
+        public Builder setQuality(@IntRange(from = 0, to = 100) int quality) {
             saveConfig.quality = quality;
             return this;
         }
