@@ -11,10 +11,13 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.widget.FrameLayout;
 
+import com.steelkiwi.cropiwa.config.ConfigChangeListener;
 import com.steelkiwi.cropiwa.config.CropIwaImageViewConfig;
 import com.steelkiwi.cropiwa.config.CropIwaOverlayConfig;
 import com.steelkiwi.cropiwa.config.CropIwaSaveConfig;
+import com.steelkiwi.cropiwa.image.CropArea;
 import com.steelkiwi.cropiwa.image.CropIwaBitmapManager;
+import com.steelkiwi.cropiwa.image.CropIwaResultReceiver;
 import com.steelkiwi.cropiwa.image.LoadBitmapCommand;
 import com.steelkiwi.cropiwa.util.CropIwaLog;
 
@@ -22,14 +25,6 @@ import com.steelkiwi.cropiwa.util.CropIwaLog;
  * Created by yarolegovich on 02.02.2017.
  */
 public class CropIwaView extends FrameLayout {
-
-    /**
-     * TODO:
-     * 1. Add API:
-     * -Rotate image
-     * 2. Add ability to crop and save it...!!!
-     * The last one is pretty important!
-     */
 
     private CropIwaImageView imageView;
     private CropIwaOverlayView overlayView;
@@ -41,6 +36,11 @@ public class CropIwaView extends FrameLayout {
 
     private Uri imageUri;
     private LoadBitmapCommand loadBitmapCommand;
+
+    private ErrorListener errorListener;
+    private CropSaveCompleteListener cropSaveCompleteListener;
+
+    private CropIwaResultReceiver cropIwaResultReceiver;
 
     public CropIwaView(Context context) {
         super(context);
@@ -74,13 +74,32 @@ public class CropIwaView extends FrameLayout {
         overlayView = overlayConfig.isDynamicCrop() ?
                 new CropIwaDynamicOverlayView(getContext(), overlayConfig) :
                 new CropIwaOverlayView(getContext(), overlayConfig);
+        overlayConfig.addConfigChangeListener(new ConfigChangeListener() {
+            @Override
+            public void onConfigChanged() {
+                boolean cropModeChanged = !configureOverlay().isDynamicCrop() ?
+                        overlayView instanceof CropIwaDynamicOverlayView :
+                        overlayView instanceof CropIwaOverlayView;
+                if (cropModeChanged) {
+                    overlayConfig.removeConfigChangeListener(overlayView);
+                    removeView(overlayView);
+                    overlayView = configureOverlay().isDynamicCrop() ?
+                            new CropIwaDynamicOverlayView(getContext(), overlayConfig) :
+                            new CropIwaOverlayView(getContext(), overlayConfig);
+                    overlayView.setNewBoundsListener(imageView);
+                    addView(overlayView);
+                    invalidate();
+                }
+            }
+        });
         overlayView.setNewBoundsListener(imageView);
-        LayoutParams params = generateDefaultLayoutParams();
-        params.gravity = Gravity.CENTER;
-        overlayView.setLayoutParams(params);
         addView(overlayView);
 
         imageView.setImagePositionedListener(overlayView);
+
+        cropIwaResultReceiver = new CropIwaResultReceiver();
+        cropIwaResultReceiver.register(getContext());
+        cropIwaResultReceiver.setListener(new CropResultRouter());
     }
 
     @Override
@@ -118,6 +137,8 @@ public class CropIwaView extends FrameLayout {
         overlayView.measure(
                 imageView.getMeasuredWidthAndState(),
                 imageView.getMeasuredHeightAndState());
+        overlayView.onImagePositioned(imageView.getImageRect());
+
         setMeasuredDimension(
                 imageView.getMeasuredWidthAndState(),
                 imageView.getMeasuredHeightAndState());
@@ -132,14 +153,10 @@ public class CropIwaView extends FrameLayout {
     }
 
     public void setImageUri(Uri uri) {
-        setImageUri(uri, null);
-    }
-
-    public void setImageUri(Uri uri, ErrorListener listener) {
         imageUri = uri;
         loadBitmapCommand = new LoadBitmapCommand(
                 uri, getWidth(), getHeight(),
-                new BitmapLoadListener(listener));
+                new BitmapLoadListener());
         loadBitmapCommand.tryExecute(getContext());
     }
 
@@ -152,7 +169,9 @@ public class CropIwaView extends FrameLayout {
                 imageView.getImageRect(),
                 imageView.getImageRect(),
                 overlayView.getCropRect());
-        CropIwaBitmapManager.get().crop(getContext(), cropArea, imageUri, saveConfig);
+        CropIwaBitmapManager.get().crop(
+                getContext(), cropArea, imageUri,
+                saveConfig);
     }
 
     @Override
@@ -163,15 +182,20 @@ public class CropIwaView extends FrameLayout {
             loader.unregisterLoadListenerFor(imageUri);
             loader.scheduleRemoveIfCached(imageUri);
         }
+        if (cropIwaResultReceiver != null) {
+            cropIwaResultReceiver.unregister(getContext());
+        }
+    }
+
+    public void setErrorListener(ErrorListener errorListener) {
+        this.errorListener = errorListener;
+    }
+
+    public void setCropSaveCompleteListener(CropSaveCompleteListener cropSaveCompleteListener) {
+        this.cropSaveCompleteListener = cropSaveCompleteListener;
     }
 
     private class BitmapLoadListener implements CropIwaBitmapManager.BitmapLoadListener {
-
-        private ErrorListener listener;
-
-        private BitmapLoadListener(ErrorListener listener) {
-            this.listener = listener;
-        }
 
         @Override
         public void onBitmapLoaded(Uri imageUri, Bitmap bitmap) {
@@ -180,9 +204,26 @@ public class CropIwaView extends FrameLayout {
 
         @Override
         public void onLoadFailed(Throwable e) {
-            CropIwaLog.e("CropIwa Image loading from " + imageUri + " failed", e);
-            if (listener != null) {
-                listener.onError(e);
+            CropIwaLog.e("CropIwa Image loading from [" + imageUri + "] failed", e);
+            if (errorListener != null) {
+                errorListener.onError(e);
+            }
+        }
+    }
+
+    private class CropResultRouter implements CropIwaResultReceiver.Listener {
+
+        @Override
+        public void onCropSuccess(Uri croppedUri) {
+            if (cropSaveCompleteListener != null) {
+                cropSaveCompleteListener.onCroppedRegionSaved(croppedUri);
+            }
+        }
+
+        @Override
+        public void onCropFailed(Throwable e) {
+            if (errorListener != null) {
+                errorListener.onError(e);
             }
         }
     }

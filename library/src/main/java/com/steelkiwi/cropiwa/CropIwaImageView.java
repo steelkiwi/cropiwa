@@ -1,35 +1,31 @@
 package com.steelkiwi.cropiwa;
 
 import android.animation.ValueAnimator;
-import android.annotation.TargetApi;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.support.annotation.FloatRange;
-import android.util.AttributeSet;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.widget.ImageView;
 
 import com.steelkiwi.cropiwa.config.ConfigChangeListener;
 import com.steelkiwi.cropiwa.config.CropIwaImageViewConfig;
-import com.steelkiwi.cropiwa.util.CropIwaLog;
 import com.steelkiwi.cropiwa.util.CropIwaUtils;
-import com.steelkiwi.cropiwa.util.MatrixAnimator;
 import com.steelkiwi.cropiwa.util.MatrixUtils;
+import com.steelkiwi.cropiwa.util.MatrixAnimator;
 import com.steelkiwi.cropiwa.util.TensionInterpolator;
 
 /**
  * @author Yaroslav Polyakov https://github.com/polyak01
  * 03.02.2017.
  */
+@SuppressLint("ViewConstructor")
 class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigChangeListener {
 
-    private float maxScale;
     private float minScale;
 
     private Matrix imageMatrix;
@@ -55,7 +51,6 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
         config = c;
         config.addConfigChangeListener(this);
 
-        maxScale = c.getMaxScale();
         minScale = c.getDefaultMinScale();
 
         imageBounds = new RectF();
@@ -212,13 +207,11 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
     }
 
     private void setScalePercent(@FloatRange(from = 0.01f, to = 1f) float percent) {
-        float desiredScale = (minScale + maxScale) * percent;
+        float desiredScale = minScale + (minScale + config.getMaxScale()) * percent;
         float currentScale = matrixUtils.getScaleX(imageMatrix);
         float factor = desiredScale / currentScale;
-        CropIwaLog.d("scaling image by " + factor);
         scaleImage(factor);
         invalidate();
-        CropIwaLog.d("was %.2f, now is %.2f", currentScale, matrixUtils.getScaleX(imageMatrix));
     }
 
     private void scaleImage(float factor) {
@@ -248,10 +241,7 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
 
     @Override
     public void onConfigChanged() {
-        maxScale = config.getMaxScale();
-        CropIwaLog.d("config changed... scale = " + matrixUtils.getScaleX(imageMatrix));
         if (Math.abs(getCurrentScalePercent() - config.getScale()) > 0.001f) {
-            CropIwaLog.d("scale was changed...");
             setScalePercent(config.getScale());
             invalidate();
         }
@@ -259,6 +249,10 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
 
     public void setImagePositionedListener(OnImagePositionedListener imagePositionedListener) {
         this.imagePositionedListener = imagePositionedListener;
+        if (isOnScreen) {
+            updateImageBounds();
+            imagePositionedListener.onImagePositioned(imageBounds);
+        }
     }
 
     public RectF getImageRect() {
@@ -268,7 +262,7 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
 
     private float getCurrentScalePercent() {
         return CropIwaUtils.boundValue(
-                0.01f + (matrixUtils.getScaleX(imageMatrix) - minScale) / (maxScale),
+                0.01f + (matrixUtils.getScaleX(imageMatrix) - minScale) / (config.getMaxScale()),
                 0.01f, 1f);
     }
 
@@ -286,7 +280,7 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
         }
 
         private boolean isValidScale(float newScale) {
-            return newScale >= minScale && newScale <= (minScale + maxScale);
+            return newScale >= minScale && newScale <= (minScale + config.getMaxScale());
         }
     }
 

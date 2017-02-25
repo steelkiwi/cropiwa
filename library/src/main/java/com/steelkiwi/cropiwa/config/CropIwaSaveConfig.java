@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.annotation.IntRange;
 
+import com.steelkiwi.cropiwa.image.CropIwaBitmapManager;
+
 import java.io.File;
 
 /**

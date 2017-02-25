@@ -49,13 +49,10 @@ public class CropIwaBitmapManager {
     }
 
     public void load(Context context, Uri uri, int width, int height, BitmapLoadListener listener) {
-        CropIwaLog.d("requesting to load " + uri);
         if (requestResultListeners.containsKey(uri)) {
-            CropIwaLog.d("loading already in progress...");
             requestResultListeners.put(uri, listener);
             return;
         }
-        CropIwaLog.d("loading started...");
         requestResultListeners.put(uri, listener);
         LoadImageTask task = new LoadImageTask(
                 context.getApplicationContext(), uri,
@@ -244,7 +241,11 @@ public class CropIwaBitmapManager {
 
         @Override
         protected void onPostExecute(Throwable throwable) {
-            super.onPostExecute(throwable);
+            if (throwable == null) {
+                CropIwaResultReceiver.onCropCompleted(context, saveConfig.getDstUri());
+            } else {
+                CropIwaResultReceiver.onCropFailed(context, throwable);
+            }
         }
     }
 

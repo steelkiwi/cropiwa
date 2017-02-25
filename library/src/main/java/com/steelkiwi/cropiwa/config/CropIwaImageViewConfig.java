@@ -21,11 +21,13 @@ public class CropIwaImageViewConfig {
 
     public static final int SCALE_UNSPECIFIED = -1;
 
+    @SuppressWarnings("Range")
     public static CropIwaImageViewConfig createDefault() {
         return new CropIwaImageViewConfig()
                 .setMaxScale(DEFAULT_MAX_SCALE)
                 .setImageTranslationEnabled(true)
-                .setImageScaleEnabled(true);
+                .setImageScaleEnabled(true)
+                .setScale(SCALE_UNSPECIFIED);
     }
 
     public static CropIwaImageViewConfig createFromAttributes(Context c, AttributeSet attrs) {
@@ -62,7 +64,6 @@ public class CropIwaImageViewConfig {
 
     public CropIwaImageViewConfig() {
         configChangeListeners = new ArrayList<>();
-        scale = SCALE_UNSPECIFIED;
     }
 
     public float getMaxScale() {
