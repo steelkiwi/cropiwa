@@ -11,6 +11,7 @@ import android.view.View;
 
 import com.steelkiwi.cropiwa.image.CropIwaResultReceiver;
 import com.steelkiwi.cropiwa.sample.adapter.CropGalleryAdapter;
+import com.steelkiwi.cropiwa.sample.data.CropGallery;
 
 public class CropGalleryActivity extends AppCompatActivity implements CropIwaResultReceiver.Listener {
 
@@ -22,7 +23,7 @@ public class CropGalleryActivity extends AppCompatActivity implements CropIwaRes
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_crop_gallery_xml);
 
         container = findViewById(R.id.container);
 

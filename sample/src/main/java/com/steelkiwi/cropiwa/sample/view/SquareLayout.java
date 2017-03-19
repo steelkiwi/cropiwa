@@ -1,4 +1,4 @@
-package com.steelkiwi.cropiwa.sample.util;
+package com.steelkiwi.cropiwa.sample.view;
 
 import android.content.Context;
 import android.os.Build;

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.yarolegovich.mp.MaterialPreferenceCategory xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:mpc_title="Overlay">
+
+    <com.yarolegovich.mp.MaterialSwitchPreference
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:mp_default_value="true"
+        app:mp_key="@string/key_dynamic_crop"
+        app:mp_title="Dynamic overlay" />
+
+    <com.yarolegovich.mp.MaterialColorPreference
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:mp_initial_color="@color/cropiwa_default_border_color"
+        app:mp_key="@string/key_border_color"
+        app:mp_title="Border color" />
+
+    <com.yarolegovich.mp.MaterialColorPreference
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:mp_initial_color="@color/cropiwa_default_corner_color"
+        app:mp_key="@string/key_corner_color"
+        app:mp_title="Corner color" />
+
+    <com.yarolegovich.mp.MaterialColorPreference
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:mp_initial_color="@color/cropiwa_default_overlay_color"
+        app:mp_key="@string/key_overlay_color"
+        app:mp_title="Overlay color" />
+
+    <com.yarolegovich.mp.MaterialColorPreference
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:mp_initial_color="@color/cropiwa_default_grid_color"
+        app:mp_key="@string/key_grid_color"
+        app:mp_title="Grid color" />
+
+    <com.yarolegovich.mp.MaterialCheckboxPreference
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:mp_default_value="true"
+        app:mp_key="@string/key_draw_grid"
+        app:mp_title="Draw grid" />
+
+
+</com.yarolegovich.mp.MaterialPreferenceCategory>

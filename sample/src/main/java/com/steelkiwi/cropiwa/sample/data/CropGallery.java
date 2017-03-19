@@ -1,7 +1,10 @@
-package com.steelkiwi.cropiwa.sample;
+package com.steelkiwi.cropiwa.sample.data;
 
 import android.net.Uri;
 import android.support.annotation.DrawableRes;
+
+import com.steelkiwi.cropiwa.sample.App;
+import com.steelkiwi.cropiwa.sample.R;
 
 import java.util.Arrays;
 import java.util.List;
