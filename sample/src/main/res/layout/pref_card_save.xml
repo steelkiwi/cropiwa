@@ -1,6 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<com.yarolegovich.mp.MaterialPreferenceCategory xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:mpc_title="Result">
 
-</LinearLayout>
+    <com.yarolegovich.mp.MaterialChoicePreference
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:mp_default_value="true"
+        app:mp_entry_values="@array/save_format"
+        app:mp_key="@string/key_save_format"
+        app:mp_show_value="onRight"
+        app:mp_title="Image format" />
+
+    <com.yarolegovich.mp.MaterialSeekBarPreference
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:mp_default_value="90"
+        app:mp_key="@string/key_quality"
+        app:mp_max_val="100"
+        app:mp_show_val="true"
+        app:mp_min_val="1"
+        app:mp_title="Image quality" />
+
+</com.yarolegovich.mp.MaterialPreferenceCategory>

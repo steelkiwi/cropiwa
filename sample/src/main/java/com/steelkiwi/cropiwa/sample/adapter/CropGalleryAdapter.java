@@ -5,6 +5,7 @@ import android.app.ActivityOptions;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,9 +43,11 @@ public class CropGalleryAdapter extends RecyclerView.Adapter<CropGalleryAdapter.
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         if (isImage(position)) {
-            holder.item = getItem(position);
+            Log.d("tag", getItem(position).toString());
+            Uri item = getItem(position);
+            holder.item = item;
             Glide.with(holder.itemView.getContext())
-                    .load(holder.item)
+                    .load(item)
                     .into(holder.image);
         }
     }
@@ -79,7 +82,7 @@ public class CropGalleryAdapter extends RecyclerView.Adapter<CropGalleryAdapter.
 
     public void addImage(Uri newImage) {
         imageUris.add(0, newImage);
-        notifyItemInserted(0);
+        notifyItemInserted(1);
     }
 
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

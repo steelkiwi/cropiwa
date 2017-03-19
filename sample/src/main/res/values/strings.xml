@@ -2,8 +2,12 @@
     <string name="app_name">CropIwa</string>
 
     <string name="title_crop_gallery">Crop gallery</string>
+    <string name="title_crop">Crop</string>
 
     <string name="msg_crop_failed">Crop failed: %s</string>
 
-    <string name="transition_view_image">view_image</string>
+    <string name="btn_new_crop">New crop</string>
+
+    <string name="transition_view_image" translatable="false">view_image</string>
+    <string name="mi_done">Done</string>
 </resources>

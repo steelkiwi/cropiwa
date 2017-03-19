@@ -1,6 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="6">
+
+        <include layout="@layout/toolbar" />
+
+        <com.steelkiwi.cropiwa.CropIwaView
+            android:id="@+id/crop_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+    </android.support.design.widget.AppBarLayout>
+
+    <com.yarolegovich.mp.MaterialPreferenceScreen
+        android:id="@+id/crop_preference_screen"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="4">
+
+        <include layout="@layout/pref_card_crop_mode" />
+
+        <include layout="@layout/pref_card_image" />
+
+        <include layout="@layout/pref_card_save" />
+
+        <include layout="@layout/pref_card_style" />
+
+
+    </com.yarolegovich.mp.MaterialPreferenceScreen>
+
 
 </LinearLayout>

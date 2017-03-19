@@ -2,11 +2,14 @@ package com.steelkiwi.cropiwa.sample.config;
 
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 
 import com.steelkiwi.cropiwa.CropIwaView;
 import com.steelkiwi.cropiwa.config.ConfigChangeListener;
 import com.steelkiwi.cropiwa.config.CropIwaSaveConfig;
 import com.steelkiwi.cropiwa.sample.R;
+import com.steelkiwi.cropiwa.sample.adapter.AspectRatioPreviewAdapter;
 import com.steelkiwi.cropiwa.sample.data.CropGallery;
 import com.yarolegovich.mp.MaterialPreferenceScreen;
 import com.yarolegovich.mp.MaterialSeekBarPreference;
@@ -25,6 +28,14 @@ public class CropViewConfigurator implements StorageModule, ConfigChangeListener
         this.cropIwaView = cropIwaView;
         this.saveConfig = new CropIwaSaveConfig.Builder(CropGallery.createNewEmptyFile());
         this.seekBarPreference = (MaterialSeekBarPreference) screen.findViewById(R.id.scale_seek_bar);
+
+        AspectRatioPreviewAdapter ratioPreviewAdapter = new AspectRatioPreviewAdapter();
+        RecyclerView fixedRatioList = (RecyclerView) screen.findViewById(R.id.fixed_ratio_list);
+        fixedRatioList.setLayoutManager(new LinearLayoutManager(
+                cropIwaView.getContext(),
+                LinearLayoutManager.HORIZONTAL,
+                false));
+        fixedRatioList.setAdapter(ratioPreviewAdapter);
 
         cropIwaView.configureImage().addConfigChangeListener(this);
     }
@@ -71,11 +82,6 @@ public class CropViewConfigurator implements StorageModule, ConfigChangeListener
     }
 
     @Override
-    public void saveStringSet(String key, Set<String> value) {
-
-    }
-
-    @Override
     public boolean getBoolean(String key, boolean defaultVal) {
         if (Prefs.keys().KEY_DRAW_GRID.equals(key)) {
             return cropIwaView.configureOverlay().shouldDrawGrid();
@@ -115,9 +121,18 @@ public class CropViewConfigurator implements StorageModule, ConfigChangeListener
         return 0;
     }
 
+    public CropIwaSaveConfig getSelectedSaveConfig() {
+        return saveConfig.build();
+    }
+
     @Override
     public Set<String> getStringSet(String key, Set<String> defaultVal) {
         return null;
+    }
+
+    @Override
+    public void saveStringSet(String key, Set<String> value) {
+
     }
 
     @Override

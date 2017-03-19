@@ -2,5 +2,9 @@
 <resources>
     <color name="colorPrimary">@android:color/black</color>
     <color name="colorPrimaryDark">@android:color/black</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorAccent">#03A9F4</color>
+
+    <color name="aspectRatioNotSelected">#757575</color>
+    <color name="aspectRatioText">#757575</color>
+
 </resources>

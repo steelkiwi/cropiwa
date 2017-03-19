@@ -1,6 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<com.yarolegovich.mp.MaterialPreferenceCategory xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:mpc_title="Image">
 
-</LinearLayout>
+    <com.yarolegovich.mp.MaterialSwitchPreference
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:mp_default_value="true"
+        app:mp_key="@string/key_enable_scale_gesture"
+        app:mp_title="Enable scale gesture" />
+
+    <com.yarolegovich.mp.MaterialSwitchPreference
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:mp_default_value="true"
+        app:mp_key="@string/key_enable_translate_gesture"
+        app:mp_title="Enable translation gesture" />
+
+    <com.yarolegovich.mp.MaterialSeekBarPreference
+        android:id="@+id/scale_seek_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:mp_default_value="1"
+        app:mp_key="@string/key_scale"
+        app:mp_max_val="100"
+        app:mp_min_val="1"
+        app:mp_title="Scale image" />
+
+</com.yarolegovich.mp.MaterialPreferenceCategory>

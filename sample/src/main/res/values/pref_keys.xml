@@ -1,2 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="key_enable_scale_gesture">enable_scale</string>
+    <string name="key_enable_translate_gesture">enable_translation</string>
+    <string name="key_scale">key_scale</string>
+
+    <string name="key_border_color">border_color</string>
+    <string name="key_grid_color">grid_color</string>
+    <string name="key_overlay_color">overlay_color</string>
+    <string name="key_corner_color">corner_color</string>
+    <string name="key_draw_grid">is_draw_grid</string>
+    <string name="key_dynamic_crop">is_dynamic_crop</string>
+
+    <string name="key_quality">image_quality</string>
+    <string name="key_save_format">image_format</string>
+</resources>
