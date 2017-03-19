@@ -33,11 +33,11 @@ public class CropArea {
     }
 
     public Bitmap applyCropTo(Bitmap bitmap) {
-        float slopeX = imageRect.width() / bitmap.getWidth();
-        float slopeY = imageRect.height() / bitmap.getHeight();
         return Bitmap.createBitmap(bitmap,
-                map(slopeX, cropRect.left), map(slopeY, cropRect.top),
-                map(slopeX, cropRect.width()), map(slopeY, cropRect.height()));
+                (bitmap.getWidth() * cropRect.left) / imageRect.width(),
+                (bitmap.getHeight() * cropRect.top) / imageRect.height(),
+                (bitmap.getWidth() * cropRect.width()) / imageRect.width(),
+                (bitmap.getHeight() * cropRect.height()) / imageRect.height());
     }
 
     private int map(float slope, int coord) {
@@ -45,4 +45,3 @@ public class CropArea {
     }
 
 }
-

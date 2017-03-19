@@ -11,6 +11,7 @@ import android.view.View;
 import com.steelkiwi.cropiwa.config.ConfigChangeListener;
 import com.steelkiwi.cropiwa.config.CropIwaOverlayConfig;
 import com.steelkiwi.cropiwa.shape.CropIwaShape;
+import com.steelkiwi.cropiwa.util.CropIwaLog;
 
 /**
  * @author Yaroslav Polyakov https://github.com/polyak01
@@ -51,8 +52,9 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
         float halfWidth, halfHeight;
         AspectRatio aspectRatio = config.getAspectRatio();
 
-        boolean calculateFromWidth = aspectRatio.getHeight() < aspectRatio.getWidth()
-                || (aspectRatio.isSquare() && imageRect.width() < imageRect.height());
+        boolean calculateFromWidth =
+                aspectRatio.getHeight() < aspectRatio.getWidth()
+                        || (aspectRatio.isSquare() && imageRect.width() < imageRect.height());
 
         if (calculateFromWidth) {
             halfWidth = imageRect.width() * 0.8f * 0.5f;
@@ -61,6 +63,8 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
             halfHeight = imageRect.height() * 0.8f * 0.5f;
             halfWidth = halfHeight * config.getAspectRatio().getRatio();
         }
+
+        CropIwaLog.d(imageRect.toString());
 
         cropRect.set(
                 imageRect.centerX() - halfWidth, imageRect.centerY() - halfHeight,
@@ -84,7 +88,9 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
     @Override
     protected void onDraw(Canvas canvas) {
         canvas.drawRect(0, 0, getWidth(), getHeight(), overlayPaint);
-        cropShape.draw(canvas, cropRect);
+        if (isValidCrop()) {
+            cropShape.draw(canvas, cropRect);
+        }
     }
 
     protected void notifyNewBounds() {
@@ -93,6 +99,11 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
             RectF rect = new RectF(cropRect);
             newBoundsListener.onNewBounds(rect);
         }
+    }
+
+    private boolean isValidCrop() {
+        return cropRect.width() >= config.getMinWidth()
+                && cropRect.height() >= config.getMinHeight();
     }
 
     public boolean isResizing() {

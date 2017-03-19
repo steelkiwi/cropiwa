@@ -38,10 +38,8 @@ public class CropIwaResultReceiver extends BroadcastReceiver {
         if (listener != null) {
             if (extras.containsKey(EXTRA_ERROR)) {
                 listener.onCropFailed((Throwable) extras.getSerializable(EXTRA_ERROR));
-            }
-        } else {
-            if (extras.containsKey(EXTRA_URI)) {
-                listener.onCropSuccess((Uri) extras.getSerializable(EXTRA_URI));
+            } else if (extras.containsKey(EXTRA_URI)) {
+                listener.onCropSuccess((Uri) extras.getParcelable(EXTRA_URI));
             }
         }
     }

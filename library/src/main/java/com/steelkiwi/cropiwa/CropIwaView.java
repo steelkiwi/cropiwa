@@ -77,16 +77,17 @@ public class CropIwaView extends FrameLayout {
         overlayConfig.addConfigChangeListener(new ConfigChangeListener() {
             @Override
             public void onConfigChanged() {
-                boolean cropModeChanged = !configureOverlay().isDynamicCrop() ?
-                        overlayView instanceof CropIwaDynamicOverlayView :
-                        overlayView instanceof CropIwaOverlayView;
+                boolean cropModeChanged = overlayConfig.isDynamicCrop() !=
+                        (overlayView instanceof CropIwaDynamicOverlayView);
                 if (cropModeChanged) {
+                    CropIwaLog.d("changing crop mode!");
                     overlayConfig.removeConfigChangeListener(overlayView);
                     removeView(overlayView);
                     overlayView = configureOverlay().isDynamicCrop() ?
                             new CropIwaDynamicOverlayView(getContext(), overlayConfig) :
                             new CropIwaOverlayView(getContext(), overlayConfig);
                     overlayView.setNewBoundsListener(imageView);
+                    imageView.setImagePositionedListener(overlayView);
                     addView(overlayView);
                     invalidate();
                 }
@@ -137,12 +138,13 @@ public class CropIwaView extends FrameLayout {
         overlayView.measure(
                 imageView.getMeasuredWidthAndState(),
                 imageView.getMeasuredHeightAndState());
-        overlayView.onImagePositioned(imageView.getImageRect());
-
+        imageView.notifyImagePositioned();
         setMeasuredDimension(
                 imageView.getMeasuredWidthAndState(),
                 imageView.getMeasuredHeightAndState());
     }
+
+
 
     public CropIwaOverlayConfig configureOverlay() {
         return overlayConfig;

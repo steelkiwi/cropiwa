@@ -57,8 +57,9 @@ public class CropIwaImageViewConfig {
     private float maxScale;
     private boolean isScaleEnabled;
     private boolean isTranslationEnabled;
-    private InitialPosition initialPosition;
     private float scale;
+
+    private InitialPosition initialPosition;
 
     private List<ConfigChangeListener> configChangeListeners;
 

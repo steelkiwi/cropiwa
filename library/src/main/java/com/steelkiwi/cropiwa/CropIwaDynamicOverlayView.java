@@ -60,14 +60,16 @@ class CropIwaDynamicOverlayView extends CropIwaOverlayView {
     }
 
     private void initCornerPoints() {
-        PointF leftTop = new PointF(cropRect.left, cropRect.top);
-        PointF leftBot = new PointF(cropRect.left, cropRect.bottom);
-        PointF rightTop = new PointF(cropRect.right, cropRect.top);
-        PointF rightBot = new PointF(cropRect.right, cropRect.bottom);
-        cornerPoints[LEFT_TOP] = new CornerPoint(leftTop, rightTop, leftBot);
-        cornerPoints[LEFT_BOTTOM] = new CornerPoint(leftBot, rightBot, leftTop);
-        cornerPoints[RIGHT_TOP] = new CornerPoint(rightTop, leftTop, rightBot);
-        cornerPoints[RIGHT_BOTTOM] = new CornerPoint(rightBot, leftBot, rightTop);
+        if (cropRect.width() > 0 && cropRect.height() > 0) {
+            PointF leftTop = new PointF(cropRect.left, cropRect.top);
+            PointF leftBot = new PointF(cropRect.left, cropRect.bottom);
+            PointF rightTop = new PointF(cropRect.right, cropRect.top);
+            PointF rightBot = new PointF(cropRect.right, cropRect.bottom);
+            cornerPoints[LEFT_TOP] = new CornerPoint(leftTop, rightTop, leftBot);
+            cornerPoints[LEFT_BOTTOM] = new CornerPoint(leftBot, rightBot, leftTop);
+            cornerPoints[RIGHT_TOP] = new CornerPoint(rightTop, leftTop, rightBot);
+            cornerPoints[RIGHT_BOTTOM] = new CornerPoint(rightBot, leftBot, rightTop);
+        }
     }
 
     @Override
@@ -214,7 +216,7 @@ class CropIwaDynamicOverlayView extends CropIwaOverlayView {
     }
 
     private boolean areCornersInitialized() {
-        return cornerPoints[0] != null;
+        return cornerPoints[0] != null && cornerPoints[0].isValid();
     }
 
     private class CornerPoint {
@@ -275,6 +277,15 @@ class CropIwaDynamicOverlayView extends CropIwaOverlayView {
         public float y() {
             return thisPoint.y;
         }
+
+        @Override
+        public String toString() {
+            return thisPoint.toString();
+        }
+
+        public boolean isValid() {
+            return Math.abs(thisPoint.x - horizontalNeighbourPoint.x) >= config.getMinWidth();
+        }
     }
 
     private float[][] generateCornerSides(float length) {
@@ -286,4 +297,3 @@ class CropIwaDynamicOverlayView extends CropIwaOverlayView {
         return result;
     }
 }
-

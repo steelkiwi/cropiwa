@@ -18,9 +18,10 @@ import java.util.List;
 
 /**
  * @author yarolegovich https://github.com/yarolegovich
- * 04.02.2017.
+ *         04.02.2017.
  */
 public class CropIwaOverlayConfig {
+
 
     public static CropIwaOverlayConfig createDefault(Context context) {
         ResUtil r = new ResUtil(context);
@@ -114,9 +115,11 @@ public class CropIwaOverlayConfig {
     private CropIwaShape cropShape;
 
     private List<ConfigChangeListener> listeners;
+    private List<ConfigChangeListener> iterationList;
 
     public CropIwaOverlayConfig() {
         listeners = new ArrayList<>();
+        iterationList = new ArrayList<>();
     }
 
     public int getOverlayColor() {
@@ -247,8 +250,10 @@ public class CropIwaOverlayConfig {
     }
 
     public void apply() {
-        for (ConfigChangeListener listener : listeners) {
+        iterationList.addAll(listeners);
+        for (ConfigChangeListener listener : iterationList) {
             listener.onConfigChanged();
         }
+        iterationList.clear();
     }
 }
