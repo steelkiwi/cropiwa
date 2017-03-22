@@ -2,6 +2,7 @@ package com.steelkiwi.cropiwa.sample;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -31,7 +32,13 @@ public class CropActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         cropView = (CropIwaView) findViewById(R.id.crop_view);
-        cropView.setImageUri(Uri.parse(EXTRA_URI));
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                cropView.setImageUri(Uri.parse(EXTRA_URI));
+            }
+        }, 4000);
+
 
         MaterialPreferenceScreen cropPrefScreen = (MaterialPreferenceScreen) findViewById(R.id.crop_preference_screen);
         configurator = new CropViewConfigurator(cropView, cropPrefScreen);

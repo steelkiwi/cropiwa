@@ -6,5 +6,6 @@
 
     <color name="aspectRatioNotSelected">#757575</color>
     <color name="aspectRatioText">#757575</color>
+    <color name="disabledOverlay">#3cffffff</color>
 
 </resources>

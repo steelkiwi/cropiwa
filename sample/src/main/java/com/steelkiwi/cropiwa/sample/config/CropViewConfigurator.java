@@ -4,7 +4,9 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 
+import com.steelkiwi.cropiwa.AspectRatio;
 import com.steelkiwi.cropiwa.CropIwaView;
 import com.steelkiwi.cropiwa.config.ConfigChangeListener;
 import com.steelkiwi.cropiwa.config.CropIwaSaveConfig;
@@ -17,10 +19,13 @@ import com.yarolegovich.mp.io.StorageModule;
 
 import java.util.Set;
 
-public class CropViewConfigurator implements StorageModule, ConfigChangeListener {
+public class CropViewConfigurator implements StorageModule, ConfigChangeListener,
+        AspectRatioPreviewAdapter.OnNewSelectedListener {
 
     private CropIwaView cropIwaView;
     private CropIwaSaveConfig.Builder saveConfig;
+
+    private RecyclerView fixedRatioList;
 
     private MaterialSeekBarPreference seekBarPreference;
 
@@ -30,7 +35,8 @@ public class CropViewConfigurator implements StorageModule, ConfigChangeListener
         this.seekBarPreference = (MaterialSeekBarPreference) screen.findViewById(R.id.scale_seek_bar);
 
         AspectRatioPreviewAdapter ratioPreviewAdapter = new AspectRatioPreviewAdapter();
-        RecyclerView fixedRatioList = (RecyclerView) screen.findViewById(R.id.fixed_ratio_list);
+        ratioPreviewAdapter.setListener(this);
+        fixedRatioList = (RecyclerView) screen.findViewById(R.id.fixed_ratio_list);
         fixedRatioList.setLayoutManager(new LinearLayoutManager(
                 cropIwaView.getContext(),
                 LinearLayoutManager.HORIZONTAL,
@@ -51,6 +57,7 @@ public class CropViewConfigurator implements StorageModule, ConfigChangeListener
             cropIwaView.configureImage().setImageScaleEnabled(value).apply();
         } else if (Prefs.keys().KEY_DYNAMIC_CROP.equals(key)) {
             cropIwaView.configureOverlay().setDynamicCrop(value).apply();
+            fixedRatioList.setVisibility(value ? View.GONE : View.VISIBLE);
         }
     }
 
@@ -121,6 +128,11 @@ public class CropViewConfigurator implements StorageModule, ConfigChangeListener
         return 0;
     }
 
+    @Override
+    public void onNewAspectRatioSelected(AspectRatio ratio) {
+        cropIwaView.configureOverlay().setAspectRatio(ratio).apply();
+    }
+
     public CropIwaSaveConfig getSelectedSaveConfig() {
         return saveConfig.build();
     }
@@ -152,14 +164,7 @@ public class CropViewConfigurator implements StorageModule, ConfigChangeListener
     }
 
     private static Bitmap.CompressFormat stringToCompressFormat(String str) {
-        if ("jpeg".equals(str.toLowerCase())) {
-            return Bitmap.CompressFormat.JPEG;
-        } else if ("png".equals(str.toLowerCase())) {
-            return Bitmap.CompressFormat.PNG;
-        } else if ("webp".equals(str.toLowerCase())) {
-            return Bitmap.CompressFormat.WEBP;
-        }
-        throw new IllegalArgumentException("Unknown compress format");
+        return Bitmap.CompressFormat.valueOf(str.toUpperCase());
     }
 
     private static String compressFormatToString(Bitmap.CompressFormat format) {
