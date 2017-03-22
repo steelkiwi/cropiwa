@@ -74,6 +74,9 @@ class CropIwaDynamicOverlayView extends CropIwaOverlayView {
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
+        if (!shouldDrawOverlay) {
+            return false;
+        }
         switch (ev.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 onStartGesture(ev);
@@ -173,14 +176,15 @@ class CropIwaDynamicOverlayView extends CropIwaOverlayView {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-
-        if (areCornersInitialized()) {
-            CropIwaShape shape = config.getCropShape();
-            for (int i = 0; i < cornerPoints.length; i++) {
-                shape.drawCorner(
-                        canvas, cornerPoints[i].x(), cornerPoints[i].y(),
-                        cornerSides[i][0], cornerSides[i][1]);
+        if (shouldDrawOverlay) {
+            super.onDraw(canvas);
+            if (areCornersInitialized()) {
+                CropIwaShape shape = config.getCropShape();
+                for (int i = 0; i < cornerPoints.length; i++) {
+                    shape.drawCorner(
+                            canvas, cornerPoints[i].x(), cornerPoints[i].y(),
+                            cornerSides[i][0], cornerSides[i][1]);
+                }
             }
         }
     }

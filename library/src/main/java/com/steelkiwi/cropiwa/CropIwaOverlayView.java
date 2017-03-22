@@ -27,6 +27,8 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
     protected RectF cropRect;
     protected CropIwaOverlayConfig config;
 
+    protected boolean shouldDrawOverlay;
+
     public CropIwaOverlayView(Context context, CropIwaOverlayConfig config) {
         super(context);
         initWith(config);
@@ -49,27 +51,7 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
 
     @Override
     public void onImagePositioned(RectF imageRect) {
-        float halfWidth, halfHeight;
-        AspectRatio aspectRatio = config.getAspectRatio();
-
-        boolean calculateFromWidth =
-                aspectRatio.getHeight() < aspectRatio.getWidth()
-                        || (aspectRatio.isSquare() && imageRect.width() < imageRect.height());
-
-        if (calculateFromWidth) {
-            halfWidth = imageRect.width() * 0.8f * 0.5f;
-            halfHeight = halfWidth / config.getAspectRatio().getRatio();
-        } else {
-            halfHeight = imageRect.height() * 0.8f * 0.5f;
-            halfWidth = halfHeight * config.getAspectRatio().getRatio();
-        }
-
-        CropIwaLog.d(imageRect.toString());
-
-        cropRect.set(
-                imageRect.centerX() - halfWidth, imageRect.centerY() - halfHeight,
-                imageRect.centerX() + halfWidth, imageRect.centerY() + halfHeight);
-
+        setCropRectAccordingToAspectRatio();
         notifyNewBounds();
         invalidate();
     }
@@ -87,9 +69,11 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
 
     @Override
     protected void onDraw(Canvas canvas) {
-        canvas.drawRect(0, 0, getWidth(), getHeight(), overlayPaint);
-        if (isValidCrop()) {
-            cropShape.draw(canvas, cropRect);
+        if (shouldDrawOverlay) {
+            canvas.drawRect(0, 0, getWidth(), getHeight(), overlayPaint);
+            if (isValidCrop()) {
+                cropShape.draw(canvas, cropRect);
+            }
         }
     }
 
@@ -118,6 +102,15 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
         return new RectF(cropRect);
     }
 
+    public void setDrawOverlay(boolean shouldDraw) {
+        shouldDrawOverlay = shouldDraw;
+        invalidate();
+    }
+
+    public boolean isDrawn() {
+        return shouldDrawOverlay;
+    }
+
     public void setNewBoundsListener(OnNewBoundsListener newBoundsListener) {
         this.newBoundsListener = newBoundsListener;
     }
@@ -127,7 +120,45 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
         overlayPaint.setColor(config.getOverlayColor());
         cropShape = config.getCropShape();
         cropShape.onConfigChanged();
+        setCropRectAccordingToAspectRatio();
+        notifyNewBounds();
         invalidate();
+    }
+
+    private void setCropRectAccordingToAspectRatio() {
+        float viewWidth = getMeasuredWidth(), viewHeight = getMeasuredHeight();
+        if (viewWidth == 0 || viewHeight == 0) {
+            return;
+        }
+
+        AspectRatio aspectRatio = config.getAspectRatio();
+
+        if (cropRect.width() != 0 && cropRect.height() != 0) {
+            float currentRatio = cropRect.width() / cropRect.height();
+            if (Math.abs(currentRatio - aspectRatio.getRatio()) < 0.001) {
+                return;
+            }
+        }
+
+        float centerX = viewWidth * 0.5f;
+        float centerY = viewHeight * 0.5f;
+        float halfWidth, halfHeight;
+
+        boolean calculateFromWidth =
+                aspectRatio.getHeight() < aspectRatio.getWidth()
+                        || (aspectRatio.isSquare() && viewWidth < viewHeight);
+
+        if (calculateFromWidth) {
+            halfWidth = viewWidth * 0.8f * 0.5f;
+            halfHeight = halfWidth / config.getAspectRatio().getRatio();
+        } else {
+            halfHeight = viewHeight * 0.8f * 0.5f;
+            halfWidth = halfHeight * config.getAspectRatio().getRatio();
+        }
+
+        cropRect.set(
+                centerX - halfWidth, centerY - halfHeight,
+                centerX + halfWidth, centerY + halfHeight);
     }
 
 }

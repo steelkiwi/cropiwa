@@ -65,42 +65,37 @@ public class CropIwaView extends FrameLayout {
 
     private void init(AttributeSet attrs) {
         imageConfig = CropIwaImageViewConfig.createFromAttributes(getContext(), attrs);
-        imageView = new CropIwaImageView(getContext(), imageConfig);
-        imageView.setBackgroundColor(Color.BLACK);
-        gestureDetector = imageView.getImageTransformGestureDetector();
-        addView(imageView);
+        initImageView();
 
         overlayConfig = CropIwaOverlayConfig.createFromAttributes(getContext(), attrs);
-        overlayView = overlayConfig.isDynamicCrop() ?
-                new CropIwaDynamicOverlayView(getContext(), overlayConfig) :
-                new CropIwaOverlayView(getContext(), overlayConfig);
-        overlayConfig.addConfigChangeListener(new ConfigChangeListener() {
-            @Override
-            public void onConfigChanged() {
-                boolean cropModeChanged = overlayConfig.isDynamicCrop() !=
-                        (overlayView instanceof CropIwaDynamicOverlayView);
-                if (cropModeChanged) {
-                    CropIwaLog.d("changing crop mode!");
-                    overlayConfig.removeConfigChangeListener(overlayView);
-                    removeView(overlayView);
-                    overlayView = configureOverlay().isDynamicCrop() ?
-                            new CropIwaDynamicOverlayView(getContext(), overlayConfig) :
-                            new CropIwaOverlayView(getContext(), overlayConfig);
-                    overlayView.setNewBoundsListener(imageView);
-                    imageView.setImagePositionedListener(overlayView);
-                    addView(overlayView);
-                    invalidate();
-                }
-            }
-        });
-        overlayView.setNewBoundsListener(imageView);
-        addView(overlayView);
-
-        imageView.setImagePositionedListener(overlayView);
+        overlayConfig.addConfigChangeListener(new ReInitOverlayOnResizeModeChange());
+        initOverlayView();
 
         cropIwaResultReceiver = new CropIwaResultReceiver();
         cropIwaResultReceiver.register(getContext());
         cropIwaResultReceiver.setListener(new CropResultRouter());
+    }
+
+    private void initImageView() {
+        if (imageConfig == null) {
+            throw new IllegalStateException("imageConfig must be initialized before calling this method");
+        }
+        imageView = new CropIwaImageView(getContext(), imageConfig);
+        imageView.setBackgroundColor(Color.BLACK);
+        gestureDetector = imageView.getImageTransformGestureDetector();
+        addView(imageView);
+    }
+
+    private void initOverlayView() {
+        if (imageView == null || overlayConfig == null) {
+            throw new IllegalStateException("imageView and overlayConfig must be initialized before calling this method");
+        }
+        overlayView = overlayConfig.isDynamicCrop() ?
+                new CropIwaDynamicOverlayView(getContext(), overlayConfig) :
+                new CropIwaOverlayView(getContext(), overlayConfig);
+        overlayView.setNewBoundsListener(imageView);
+        imageView.setImagePositionedListener(overlayView);
+        addView(overlayView);
     }
 
     @Override
@@ -145,7 +140,6 @@ public class CropIwaView extends FrameLayout {
     }
 
 
-
     public CropIwaOverlayConfig configureOverlay() {
         return overlayConfig;
     }
@@ -164,6 +158,7 @@ public class CropIwaView extends FrameLayout {
 
     public void setImage(Bitmap bitmap) {
         imageView.setImageBitmap(bitmap);
+        overlayView.setDrawOverlay(true);
     }
 
     public void crop(CropIwaSaveConfig saveConfig) {
@@ -207,6 +202,7 @@ public class CropIwaView extends FrameLayout {
         @Override
         public void onLoadFailed(Throwable e) {
             CropIwaLog.e("CropIwa Image loading from [" + imageUri + "] failed", e);
+            overlayView.setDrawOverlay(false);
             if (errorListener != null) {
                 errorListener.onError(e);
             }
@@ -227,6 +223,27 @@ public class CropIwaView extends FrameLayout {
             if (errorListener != null) {
                 errorListener.onError(e);
             }
+        }
+    }
+
+    private class ReInitOverlayOnResizeModeChange implements ConfigChangeListener {
+
+        @Override
+        public void onConfigChanged() {
+            if (shouldReInit()) {
+                overlayConfig.removeConfigChangeListener(overlayView);
+                boolean shouldDrawOverlay = overlayView.isDrawn();
+                removeView(overlayView);
+
+                initOverlayView();
+                overlayView.setDrawOverlay(shouldDrawOverlay);
+
+                invalidate();
+            }
+        }
+
+        private boolean shouldReInit() {
+            return overlayConfig.isDynamicCrop() != (overlayView instanceof CropIwaDynamicOverlayView);
         }
     }
 

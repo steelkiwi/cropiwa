@@ -37,8 +37,6 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
     private RectF imageBounds;
     private RectF realImageBounds;
 
-    private boolean isOnScreen;
-
     private OnImagePositionedListener imagePositionedListener;
 
     private CropIwaImageViewConfig config;
@@ -159,31 +157,19 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        isOnScreen = true;
-    }
-
-    @Override
     public void onNewBounds(RectF bounds) {
+        updateImageBounds();
         allowedBounds.set(bounds);
         if (hasImageSize()) {
-            if (isOnScreen) {
-                animateToAllowedBounds();
-            } else {
-                moveToAllowedBounds();
-            }
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    animateToAllowedBounds();
+                }
+            });
             updateImageBounds();
             invalidate();
         }
-    }
-
-    private void moveToAllowedBounds() {
-        updateImageBounds();
-        imageMatrix.set(MatrixUtils.findTransformToAllowedBounds(
-                realImageBounds, imageMatrix,
-                allowedBounds));
-        setImageMatrix(imageMatrix);
     }
 
     private void animateToAllowedBounds() {
@@ -247,7 +233,7 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
 
     public void setImagePositionedListener(OnImagePositionedListener imagePositionedListener) {
         this.imagePositionedListener = imagePositionedListener;
-        if (isOnScreen) {
+        if (hasImageSize()) {
             updateImageBounds();
             notifyImagePositioned();
         }
@@ -286,7 +272,6 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
         }
 
         private boolean isValidScale(float newScale) {
-            CropIwaLog.d("min(%.2f) < current(%.2f) < max(%.2f)", minScale, newScale, minScale + config.getMaxScale());
             return newScale >= minScale && newScale <= (minScale + config.getMaxScale());
         }
     }
