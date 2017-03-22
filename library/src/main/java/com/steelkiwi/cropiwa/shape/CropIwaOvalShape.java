@@ -63,6 +63,7 @@ public class CropIwaOvalShape extends CropIwaShape {
 
             RectF ovalRect = new RectF(0, 0, croppedRegion.getWidth(), croppedRegion.getHeight());
             Path maskShape = new Path();
+            //This is similar to ImageRect\Oval
             maskShape.addRect(ovalRect, Path.Direction.CW);
             maskShape.addOval(ovalRect, Path.Direction.CCW);
 

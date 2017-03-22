@@ -59,7 +59,18 @@ public abstract class CropIwaShape implements ConfigChangeListener {
         canvas.drawLine(x, y, x + deltaX, y, cornerPaint);
         canvas.drawLine(x, y, x, y + deltaY, cornerPaint);
     }
+    public Paint getCornerPaint() {
+        return cornerPaint;
+    }
 
+    public Paint getGridPaint() {
+        return gridPaint;
+    }
+
+    public Paint getBorderPaint() {
+        return borderPaint;
+    }
+    
     public abstract CropIwaShapeMask getMask();
 
     protected abstract void clearArea(Canvas canvas, RectF cropBounds, Paint clearPaint);
