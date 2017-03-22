@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.view.Gravity;
 import android.view.MotionEvent;
 import android.widget.FrameLayout;
 
@@ -18,7 +17,7 @@ import com.steelkiwi.cropiwa.config.CropIwaSaveConfig;
 import com.steelkiwi.cropiwa.image.CropArea;
 import com.steelkiwi.cropiwa.image.CropIwaBitmapManager;
 import com.steelkiwi.cropiwa.image.CropIwaResultReceiver;
-import com.steelkiwi.cropiwa.image.LoadBitmapCommand;
+import com.steelkiwi.cropiwa.util.LoadBitmapCommand;
 import com.steelkiwi.cropiwa.shape.CropIwaShapeMask;
 import com.steelkiwi.cropiwa.util.CropIwaLog;
 
@@ -184,7 +183,7 @@ public class CropIwaView extends FrameLayout {
         if (imageUri != null) {
             CropIwaBitmapManager loader = CropIwaBitmapManager.get();
             loader.unregisterLoadListenerFor(imageUri);
-            loader.scheduleRemoveIfCached(imageUri);
+            loader.removeIfCached(imageUri);
         }
         if (cropIwaResultReceiver != null) {
             cropIwaResultReceiver.unregister(getContext());

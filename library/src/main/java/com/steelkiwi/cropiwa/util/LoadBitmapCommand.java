@@ -1,9 +1,9 @@
-package com.steelkiwi.cropiwa.image;
+package com.steelkiwi.cropiwa.util;
 
 import android.content.Context;
 import android.net.Uri;
 
-import com.steelkiwi.cropiwa.util.CropIwaLog;
+import com.steelkiwi.cropiwa.image.CropIwaBitmapManager;
 
 /**
  * @author Yaroslav Polyakov https://github.com/polak01
