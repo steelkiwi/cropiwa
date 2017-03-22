@@ -5,6 +5,15 @@
     android:layout_height="match_parent"
     app:mpc_title="Crop mode">
 
+    <com.yarolegovich.mp.MaterialChoicePreference
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:mp_entry_values="@array/crop_shapes"
+        app:mp_default_value="Rectangle"
+        app:mp_show_value="onRight"
+        app:mp_key="@string/key_crop_shape"
+        app:mp_title="Crop shape" />
+
     <com.yarolegovich.mp.MaterialSwitchPreference
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -15,7 +24,6 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/fixed_ratio_list"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-
+        android:layout_height="wrap_content" />
 
 </com.yarolegovich.mp.MaterialPreferenceCategory>

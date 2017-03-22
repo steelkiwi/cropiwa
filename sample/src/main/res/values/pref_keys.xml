@@ -10,6 +10,8 @@
     <string name="key_corner_color">corner_color</string>
     <string name="key_draw_grid">is_draw_grid</string>
     <string name="key_dynamic_crop">is_dynamic_crop</string>
+    <string name="key_crop_shape">crop_shape</string>
+    <string name="key_dashed_grid">dashed_grid</string>
 
     <string name="key_quality">image_quality</string>
     <string name="key_save_format">image_format</string>

@@ -4,6 +4,8 @@
     <string name="title_crop_gallery">Crop gallery</string>
     <string name="title_crop">Crop</string>
 
+    <string name="title_choose_image">Open</string>
+
     <string name="msg_crop_failed">Crop failed: %s</string>
 
     <string name="btn_new_crop">New crop</string>

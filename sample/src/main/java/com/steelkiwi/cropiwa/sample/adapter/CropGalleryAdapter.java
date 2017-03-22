@@ -25,7 +25,7 @@ public class CropGalleryAdapter extends RecyclerView.Adapter<CropGalleryAdapter.
 
     private List<Uri> imageUris;
 
-    private OnNewCropButtonClickListener buttonClickListener;
+    private Listener listener;
 
     public CropGalleryAdapter() {
         imageUris = new ArrayList<>();
@@ -43,11 +43,9 @@ public class CropGalleryAdapter extends RecyclerView.Adapter<CropGalleryAdapter.
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         if (isImage(position)) {
-            Log.d("tag", getItem(position).toString());
-            Uri item = getItem(position);
-            holder.item = item;
+            holder.item = getItem(position);
             Glide.with(holder.itemView.getContext())
-                    .load(item)
+                    .load(holder.item)
                     .into(holder.image);
         }
     }
@@ -70,8 +68,8 @@ public class CropGalleryAdapter extends RecyclerView.Adapter<CropGalleryAdapter.
         return imageUris.size() + 1;
     }
 
-    public void setNewCropButtonClickListener(OnNewCropButtonClickListener newCropButtonClickListener) {
-        buttonClickListener = newCropButtonClickListener;
+    public void setListener(Listener listener) {
+        this.listener = listener;
     }
 
     public void addImages(List<Uri> images) {
@@ -85,7 +83,16 @@ public class CropGalleryAdapter extends RecyclerView.Adapter<CropGalleryAdapter.
         notifyItemInserted(1);
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public void removeImage(Uri image) {
+        int index = imageUris.indexOf(image);
+        if (index != -1) {
+            imageUris.remove(index);
+            notifyItemRemoved(index + 1);
+        }
+    }
+
+    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener,
+            View.OnLongClickListener {
 
         private ImageView image;
         private Uri item;
@@ -96,6 +103,7 @@ public class CropGalleryAdapter extends RecyclerView.Adapter<CropGalleryAdapter.
                 image = (ImageView) itemView.findViewById(R.id.image);
             }
             itemView.setOnClickListener(this);
+            itemView.setOnLongClickListener(this);
         }
 
         @Override
@@ -106,9 +114,20 @@ public class CropGalleryAdapter extends RecyclerView.Adapter<CropGalleryAdapter.
                         (Activity) v.getContext(), image,
                         image.getTransitionName());
                 v.getContext().startActivity(viewImageIntent, options.toBundle());
-            } else if (buttonClickListener != null) {
-                buttonClickListener.onNewCropButtonClicked();
+            } else if (listener != null) {
+                listener.onNewCropButtonClicked();
             }
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
+            if (isImage()) {
+                if (listener != null) {
+                    listener.onLongPressOnImage(item);
+                }
+                return true;
+            }
+            return false;
         }
 
         private boolean isImage() {
@@ -116,7 +135,9 @@ public class CropGalleryAdapter extends RecyclerView.Adapter<CropGalleryAdapter.
         }
     }
 
-    public interface OnNewCropButtonClickListener {
+    public interface Listener {
         void onNewCropButtonClicked();
+
+        void onLongPressOnImage(Uri image);
     }
 }

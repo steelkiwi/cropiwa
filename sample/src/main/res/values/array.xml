@@ -5,4 +5,10 @@
         <item>JPEG</item>
         <item>WEBP</item>
     </string-array>
+
+    <string-array name="crop_shapes">
+        <item>Rectangle</item>
+        <item>Oval</item>
+    </string-array>
+
 </resources>

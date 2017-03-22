@@ -14,9 +14,14 @@ import android.view.View;
 import com.steelkiwi.cropiwa.image.CropIwaResultReceiver;
 import com.steelkiwi.cropiwa.sample.adapter.CropGalleryAdapter;
 import com.steelkiwi.cropiwa.sample.data.CropGallery;
+import com.steelkiwi.cropiwa.sample.fragment.ChooseImageForCropFragment;
+import com.steelkiwi.cropiwa.sample.fragment.ConfirmDeletePhotoFragment;
 
 public class CropGalleryActivity extends AppCompatActivity implements CropIwaResultReceiver.Listener,
-        CropGalleryAdapter.OnNewCropButtonClickListener {
+        CropGalleryAdapter.Listener, ConfirmDeletePhotoFragment.Listener {
+
+    private static final String TAG_CHOOSE_IMAGE_FRAGMENT = "choose_image";
+    private static final String TAG_CONFIRM_DELETE_IMAGE = "confirm_delete";
 
     private CropIwaResultReceiver cropResultReceiver;
     private CropGalleryAdapter cropGalleryAdapter;
@@ -30,10 +35,9 @@ public class CropGalleryActivity extends AppCompatActivity implements CropIwaRes
 
         container = findViewById(R.id.container);
 
-        CropGallery cropGallery = new CropGallery();
         cropGalleryAdapter = new CropGalleryAdapter();
-        cropGalleryAdapter.setNewCropButtonClickListener(this);
-        cropGalleryAdapter.addImages(cropGallery.getCroppedImageUris());
+        cropGalleryAdapter.setListener(this);
+        cropGalleryAdapter.addImages(CropGallery.getCroppedImageUris());
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         recyclerView.setAdapter(cropGalleryAdapter);
@@ -49,13 +53,26 @@ public class CropGalleryActivity extends AppCompatActivity implements CropIwaRes
 
     @Override
     public void onCropSuccess(Uri croppedUri) {
-        Log.d("tag", "adding cropped uri!");
         cropGalleryAdapter.addImage(croppedUri);
     }
 
     @Override
     public void onNewCropButtonClicked() {
-        startActivity(new Intent(this, CropActivity.class));
+        ChooseImageForCropFragment fragment = new ChooseImageForCropFragment();
+        fragment.show(getSupportFragmentManager(), TAG_CHOOSE_IMAGE_FRAGMENT);
+    }
+
+    @Override
+    public void onLongPressOnImage(Uri image) {
+        ConfirmDeletePhotoFragment fragment = new ConfirmDeletePhotoFragment();
+        fragment.setListener(this, image);
+        fragment.show(getSupportFragmentManager(), TAG_CONFIRM_DELETE_IMAGE);
+    }
+
+    @Override
+    public void onDeleteConfirmed(Uri image) {
+        cropGalleryAdapter.removeImage(image);
+        CropGallery.removeFromGallery(image);
     }
 
     @Override

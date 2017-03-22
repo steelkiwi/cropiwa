@@ -1,5 +1,7 @@
 package com.steelkiwi.cropiwa.sample;
 
+import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,6 +19,12 @@ public class CropActivity extends AppCompatActivity {
 
     private static final String EXTRA_URI = "https://pp.vk.me/c637119/v637119751/248d1/6dd4IPXWwzI.jpg";
 
+    public static Intent callingIntent(Context context, Uri imageUri) {
+        Intent intent = new Intent(context, CropActivity.class);
+        intent.putExtra(EXTRA_URI, imageUri);
+        return intent;
+    }
+
     private CropIwaView cropView;
     private CropViewConfigurator configurator;
 
@@ -31,14 +39,9 @@ public class CropActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        Uri imageUri = getIntent().getParcelableExtra(EXTRA_URI);
         cropView = (CropIwaView) findViewById(R.id.crop_view);
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                cropView.setImageUri(Uri.parse(EXTRA_URI));
-            }
-        }, 4000);
-
+        cropView.setImageUri(imageUri);
 
         MaterialPreferenceScreen cropPrefScreen = (MaterialPreferenceScreen) findViewById(R.id.crop_preference_screen);
         configurator = new CropViewConfigurator(cropView, cropPrefScreen);

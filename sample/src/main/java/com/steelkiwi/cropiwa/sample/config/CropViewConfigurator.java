@@ -1,6 +1,9 @@
 package com.steelkiwi.cropiwa.sample.config;
 
 import android.graphics.Bitmap;
+import android.graphics.DashPathEffect;
+import android.graphics.Paint;
+import android.graphics.PathEffect;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -13,9 +16,13 @@ import com.steelkiwi.cropiwa.config.CropIwaSaveConfig;
 import com.steelkiwi.cropiwa.sample.R;
 import com.steelkiwi.cropiwa.sample.adapter.AspectRatioPreviewAdapter;
 import com.steelkiwi.cropiwa.sample.data.CropGallery;
+import com.steelkiwi.cropiwa.shape.CropIwaOvalShape;
+import com.steelkiwi.cropiwa.shape.CropIwaRectShape;
+import com.steelkiwi.cropiwa.shape.CropIwaShape;
 import com.yarolegovich.mp.MaterialPreferenceScreen;
 import com.yarolegovich.mp.MaterialSeekBarPreference;
 import com.yarolegovich.mp.io.StorageModule;
+import com.yarolegovich.mp.util.Utils;
 
 import java.util.Set;
 
@@ -58,6 +65,13 @@ public class CropViewConfigurator implements StorageModule, ConfigChangeListener
         } else if (Prefs.keys().KEY_DYNAMIC_CROP.equals(key)) {
             cropIwaView.configureOverlay().setDynamicCrop(value).apply();
             fixedRatioList.setVisibility(value ? View.GONE : View.VISIBLE);
+        } else if (Prefs.keys().KEY_DASHED_GRID.equals(key)) {
+            int dashLength = Utils.dpToPixels(cropIwaView.getContext(), 2);
+            int spaceLength = Utils.dpToPixels(cropIwaView.getContext(), 4);
+            float[] intervals = {dashLength, spaceLength};
+            PathEffect effect = value ? new DashPathEffect(intervals, 0) : null;
+            getGridPaint().setPathEffect(effect);
+            cropIwaView.invalidate();
         }
     }
 
@@ -65,6 +79,8 @@ public class CropViewConfigurator implements StorageModule, ConfigChangeListener
     public void saveString(String key, String value) {
         if (Prefs.keys().KEY_IMAGE_FORMAT.equals(key)) {
             saveConfig.setCompressFormat(stringToCompressFormat(value));
+        } else if (Prefs.keys().KEY_CROP_SHAPE.equals(key)) {
+            cropIwaView.configureOverlay().setCropShape(stringToCropShape(value)).apply();
         }
     }
 
@@ -98,6 +114,8 @@ public class CropViewConfigurator implements StorageModule, ConfigChangeListener
             return cropIwaView.configureImage().isImageScaleEnabled();
         } else if (Prefs.keys().KEY_DYNAMIC_CROP.equals(key)) {
             return cropIwaView.configureOverlay().isDynamicCrop();
+        } else if (Prefs.keys().KEY_DASHED_GRID.equals(key)) {
+            return getGridPaint().getPathEffect() != null;
         }
         return false;
     }
@@ -106,6 +124,8 @@ public class CropViewConfigurator implements StorageModule, ConfigChangeListener
     public String getString(String key, String defaultVal) {
         if (Prefs.keys().KEY_IMAGE_FORMAT.equals(key)) {
             return compressFormatToString(saveConfig.build().getCompressFormat());
+        } else if (Prefs.keys().KEY_CROP_SHAPE.equals(key)) {
+            return cropShapeToString(cropIwaView.configureOverlay().getCropShape());
         }
         return "";
     }
@@ -163,11 +183,33 @@ public class CropViewConfigurator implements StorageModule, ConfigChangeListener
         seekBarPreference.setValue(scale);
     }
 
+    private Paint getGridPaint() {
+        return cropIwaView.configureOverlay().getCropShape().getGridPaint();
+    }
+
     private static Bitmap.CompressFormat stringToCompressFormat(String str) {
         return Bitmap.CompressFormat.valueOf(str.toUpperCase());
     }
 
     private static String compressFormatToString(Bitmap.CompressFormat format) {
         return format.name();
+    }
+
+    private CropIwaShape stringToCropShape(String str) {
+        if ("rectangle".equals(str.toLowerCase())) {
+            return new CropIwaRectShape(cropIwaView.configureOverlay());
+        } else if ("oval".equals(str.toLowerCase())) {
+            return new CropIwaOvalShape(cropIwaView.configureOverlay());
+        }
+        throw new IllegalArgumentException("Unknown shape");
+    }
+
+    private static String cropShapeToString(CropIwaShape shape) {
+        if (shape instanceof CropIwaRectShape) {
+            return "Rectangle";
+        } else if (shape instanceof CropIwaOvalShape) {
+            return "Oval";
+        }
+        throw new IllegalArgumentException("Instance of unknown class");
     }
 }

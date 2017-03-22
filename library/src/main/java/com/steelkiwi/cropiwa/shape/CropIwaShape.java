@@ -70,7 +70,7 @@ public abstract class CropIwaShape implements ConfigChangeListener {
     public Paint getBorderPaint() {
         return borderPaint;
     }
-    
+
     public abstract CropIwaShapeMask getMask();
 
     protected abstract void clearArea(Canvas canvas, RectF cropBounds, Paint clearPaint);

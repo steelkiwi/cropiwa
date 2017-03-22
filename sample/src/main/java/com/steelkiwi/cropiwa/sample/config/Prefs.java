@@ -1,6 +1,7 @@
 package com.steelkiwi.cropiwa.sample.config;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.support.annotation.StringRes;
 
 import com.steelkiwi.cropiwa.sample.App;
@@ -20,6 +21,8 @@ public class Prefs {
     public final String KEY_OVERLAY_COLOR;
     public final String KEY_DYNAMIC_CROP;
     public final String KEY_DRAW_GRID;
+    public final String KEY_DASHED_GRID;
+    public final String KEY_CROP_SHAPE;
 
     public final String KEY_ENABLE_SCALE;
     public final String KEY_ENABLE_TRANSLATE;
@@ -29,22 +32,23 @@ public class Prefs {
     public final String KEY_IMAGE_QUALITY;
 
     private Prefs(Context c) {
-        KEY_CORNER_COLOR = str(c, R.string.key_corner_color);
-        KEY_BORDER_COLOR = str(c, R.string.key_border_color);
-        KEY_GRID_COLOR = str(c, R.string.key_grid_color);
-        KEY_OVERLAY_COLOR = str(c, R.string.key_overlay_color);
-        KEY_DYNAMIC_CROP = str(c, R.string.key_dynamic_crop);
-        KEY_DRAW_GRID = str(c, R.string.key_draw_grid);
+        Resources r = c.getResources();
 
-        KEY_ENABLE_SCALE = str(c, R.string.key_enable_scale_gesture);
-        KEY_ENABLE_TRANSLATE = str(c, R.string.key_enable_translate_gesture);
-        KEY_SCALE = str(c, R.string.key_scale);
+        KEY_CORNER_COLOR = r.getString(R.string.key_corner_color);
+        KEY_BORDER_COLOR = r.getString(R.string.key_border_color);
+        KEY_GRID_COLOR = r.getString(R.string.key_grid_color);
+        KEY_OVERLAY_COLOR = r.getString(R.string.key_overlay_color);
+        KEY_DYNAMIC_CROP = r.getString(R.string.key_dynamic_crop);
+        KEY_DRAW_GRID = r.getString(R.string.key_draw_grid);
+        KEY_DASHED_GRID = r.getString(R.string.key_dashed_grid);
+        KEY_CROP_SHAPE = r.getString(R.string.key_crop_shape);
 
-        KEY_IMAGE_FORMAT = str(c, R.string.key_save_format);
-        KEY_IMAGE_QUALITY = str(c, R.string.key_quality);
+        KEY_ENABLE_SCALE = r.getString(R.string.key_enable_scale_gesture);
+        KEY_ENABLE_TRANSLATE = r.getString(R.string.key_enable_translate_gesture);
+        KEY_SCALE = r.getString(R.string.key_scale);
+
+        KEY_IMAGE_FORMAT = r.getString(R.string.key_save_format);
+        KEY_IMAGE_QUALITY = r.getString(R.string.key_quality);
     }
 
-    private String str(Context c, @StringRes int resId) {
-        return c.getResources().getString(resId);
-    }
 }

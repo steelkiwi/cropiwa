@@ -40,5 +40,12 @@
         app:mp_key="@string/key_draw_grid"
         app:mp_title="Draw grid" />
 
+    <com.yarolegovich.mp.MaterialCheckboxPreference
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:mp_default_value="false"
+        app:mp_key="@string/key_dashed_grid"
+        app:mp_title="Dashed grid" />
+
 
 </com.yarolegovich.mp.MaterialPreferenceCategory>
