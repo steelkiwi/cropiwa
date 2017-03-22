@@ -25,6 +25,7 @@ public class CropIwaImageViewConfig {
     public static CropIwaImageViewConfig createDefault() {
         return new CropIwaImageViewConfig()
                 .setMaxScale(DEFAULT_MAX_SCALE)
+                .setMinScale(DEFAULT_MIN_SCALE)
                 .setImageTranslationEnabled(true)
                 .setImageScaleEnabled(true)
                 .setScale(SCALE_UNSPECIFIED);
@@ -55,6 +56,7 @@ public class CropIwaImageViewConfig {
     }
 
     private float maxScale;
+    private float minScale;
     private boolean isScaleEnabled;
     private boolean isTranslationEnabled;
     private float scale;
@@ -72,7 +74,7 @@ public class CropIwaImageViewConfig {
     }
 
     public float getMinScale() {
-        return DEFAULT_MIN_SCALE;
+        return minScale;
     }
 
     public boolean isImageScaleEnabled() {
@@ -91,7 +93,13 @@ public class CropIwaImageViewConfig {
         return scale;
     }
 
-    public CropIwaImageViewConfig setMaxScale(float maxScale) {
+    public CropIwaImageViewConfig setMinScale(@FloatRange(from = 0.001) float minScale) {
+        this.minScale = minScale;
+        return this;
+    }
+
+    public CropIwaImageViewConfig setMaxScale(@FloatRange(from = 0.001) float maxScale) {
+
         this.maxScale = maxScale;
         return this;
     }
