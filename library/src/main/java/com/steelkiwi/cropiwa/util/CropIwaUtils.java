@@ -23,6 +23,15 @@ public abstract class CropIwaUtils {
         }
     }
 
+    public static boolean isAnyNull(Iterable<?> iterable) {
+        for (Object o : iterable) {
+            if (o == null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static void constrainRectTo(int minLeft, int minTop, int maxRight, int maxBottom, RectF rect) {
         rect.set(
                 Math.max(rect.left, minLeft), Math.max(rect.top, minTop),

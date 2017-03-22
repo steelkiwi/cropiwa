@@ -10,6 +10,9 @@ import android.view.MotionEvent;
 
 import com.steelkiwi.cropiwa.config.CropIwaOverlayConfig;
 import com.steelkiwi.cropiwa.shape.CropIwaShape;
+import com.steelkiwi.cropiwa.util.CropIwaUtils;
+
+import java.util.Arrays;
 
 import static com.steelkiwi.cropiwa.util.CropIwaUtils.boundValue;
 import static com.steelkiwi.cropiwa.util.CropIwaUtils.dpToPx;
@@ -61,14 +64,18 @@ class CropIwaDynamicOverlayView extends CropIwaOverlayView {
 
     private void initCornerPoints() {
         if (cropRect.width() > 0 && cropRect.height() > 0) {
-            PointF leftTop = new PointF(cropRect.left, cropRect.top);
-            PointF leftBot = new PointF(cropRect.left, cropRect.bottom);
-            PointF rightTop = new PointF(cropRect.right, cropRect.top);
-            PointF rightBot = new PointF(cropRect.right, cropRect.bottom);
-            cornerPoints[LEFT_TOP] = new CornerPoint(leftTop, rightTop, leftBot);
-            cornerPoints[LEFT_BOTTOM] = new CornerPoint(leftBot, rightBot, leftTop);
-            cornerPoints[RIGHT_TOP] = new CornerPoint(rightTop, leftTop, rightBot);
-            cornerPoints[RIGHT_BOTTOM] = new CornerPoint(rightBot, leftBot, rightTop);
+            if (CropIwaUtils.isAnyNull(Arrays.asList(cornerPoints))) {
+                PointF leftTop = new PointF(cropRect.left, cropRect.top);
+                PointF leftBot = new PointF(cropRect.left, cropRect.bottom);
+                PointF rightTop = new PointF(cropRect.right, cropRect.top);
+                PointF rightBot = new PointF(cropRect.right, cropRect.bottom);
+                cornerPoints[LEFT_TOP] = new CornerPoint(leftTop, rightTop, leftBot);
+                cornerPoints[LEFT_BOTTOM] = new CornerPoint(leftBot, rightBot, leftTop);
+                cornerPoints[RIGHT_TOP] = new CornerPoint(rightTop, leftTop, rightBot);
+                cornerPoints[RIGHT_BOTTOM] = new CornerPoint(rightBot, leftBot, rightTop);
+            } else {
+                updateCornerPointsCoordinates();
+            }
         }
     }
 
@@ -221,6 +228,12 @@ class CropIwaDynamicOverlayView extends CropIwaOverlayView {
 
     private boolean areCornersInitialized() {
         return cornerPoints[0] != null && cornerPoints[0].isValid();
+    }
+
+    @Override
+    public void onConfigChanged() {
+        super.onConfigChanged();
+        initCornerPoints();
     }
 
     private class CornerPoint {

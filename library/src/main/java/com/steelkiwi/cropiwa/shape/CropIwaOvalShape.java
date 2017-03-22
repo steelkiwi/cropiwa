@@ -58,6 +58,8 @@ public class CropIwaOvalShape extends CropIwaShape {
     private static class OvalShapeMask implements CropIwaShapeMask {
         @Override
         public void applyMaskTo(Bitmap croppedRegion) {
+            croppedRegion.setHasAlpha(true);
+
             Paint maskPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
             maskPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
 

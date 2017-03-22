@@ -140,6 +140,11 @@ public class CropIwaView extends FrameLayout {
                 imageView.getMeasuredHeightAndState());
     }
 
+    @Override
+    public void invalidate() {
+        imageView.invalidate();
+        overlayView.invalidate();
+    }
 
     public CropIwaOverlayConfig configureOverlay() {
         return overlayConfig;
