@@ -4,7 +4,6 @@ import android.animation.FloatEvaluator;
 import android.animation.TypeEvaluator;
 import android.animation.ValueAnimator;
 import android.graphics.Matrix;
-import android.graphics.RectF;
 import android.view.animation.AccelerateDecelerateInterpolator;
 
 import java.lang.ref.WeakReference;
@@ -12,7 +11,6 @@ import java.lang.ref.WeakReference;
 /**
  * Created by yarolegovich on 06.02.2017.
  */
-
 public class MatrixAnimator {
 
     public void animate(Matrix initial, Matrix target, ValueAnimator.AnimatorUpdateListener listener) {

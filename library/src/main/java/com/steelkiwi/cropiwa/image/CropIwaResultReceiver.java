@@ -11,7 +11,6 @@ import android.os.Bundle;
  * @author yarolegovich
  * 25.02.2017.
  */
-
 public class CropIwaResultReceiver extends BroadcastReceiver {
 
     private static final String ACTION_CROP_COMPLETED = "cropIwa_action_crop_completed";

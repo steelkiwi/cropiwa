@@ -9,7 +9,6 @@ import android.os.AsyncTask;
  * Created by Yaroslav Polyakov on 22.03.2017.
  * https://github.com/polyak01
  */
-
 class LoadImageTask extends AsyncTask<Void, Void, Throwable> {
 
     private Context context;

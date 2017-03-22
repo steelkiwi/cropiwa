@@ -21,7 +21,8 @@ import java.util.Locale;
 import java.util.Random;
 
 /**
- * Created by yarolegovich on 2.03.2017.
+ * Created by yarolegovich https://github.com/yarolegovich
+ * on 2.03.2017.
  */
 
 public class ChooseImageForCropFragment extends BottomSheetDialogFragment implements View.OnClickListener {

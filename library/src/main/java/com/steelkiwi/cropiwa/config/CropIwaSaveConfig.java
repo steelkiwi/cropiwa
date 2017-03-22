@@ -5,14 +5,10 @@ import android.net.Uri;
 import android.support.annotation.IntRange;
 
 import com.steelkiwi.cropiwa.image.CropIwaBitmapManager;
-
-import java.io.File;
-
 /**
  * @author Yaroslav Polyakov https://github.com/polyak01
  *         25.02.2017.
  */
-
 public class CropIwaSaveConfig {
 
     private Bitmap.CompressFormat compressFormat;

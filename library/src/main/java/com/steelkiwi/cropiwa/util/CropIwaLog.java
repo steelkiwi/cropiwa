@@ -4,8 +4,8 @@ import android.util.Log;
 
 /**
  * Created by yarolegovich on 06.02.2017.
+ * https://github.com/yarolegovich
  */
-
 public class CropIwaLog {
 
     private static final String LOG_TAG = CropIwaLog.class.getSimpleName();

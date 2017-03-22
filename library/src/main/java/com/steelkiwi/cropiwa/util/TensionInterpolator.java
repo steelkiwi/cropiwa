@@ -5,9 +5,9 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 
 /**
- * Created by yarolegovich on 06.02.2017.
+ * Created by yarolegovich https://github.com/yarolegovich
+ * on 06.02.2017.
  */
-
 public class TensionInterpolator {
 
 

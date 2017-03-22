@@ -2,7 +2,6 @@ package com.steelkiwi.cropiwa.sample.config;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.support.annotation.StringRes;
 
 import com.steelkiwi.cropiwa.sample.App;
 import com.steelkiwi.cropiwa.sample.R;

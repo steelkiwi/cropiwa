@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -20,9 +19,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,7 +29,6 @@ import static com.steelkiwi.cropiwa.util.CropIwaUtils.*;
  * @author Yaroslav Polyakov https://github.com/polyak01
  *         on 25.02.2017.
  */
-
 public class CropIwaBitmapManager {
 
     private static final CropIwaBitmapManager INSTANCE = new CropIwaBitmapManager();
@@ -233,3 +229,4 @@ public class CropIwaBitmapManager {
         void onLoadFailed(Throwable e);
     }
 }
+

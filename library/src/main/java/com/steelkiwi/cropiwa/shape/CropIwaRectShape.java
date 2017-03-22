@@ -6,12 +6,11 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 
 import com.steelkiwi.cropiwa.config.CropIwaOverlayConfig;
-import com.steelkiwi.cropiwa.shape.CropIwaShape;
 
 /**
  * Created by yarolegovich on 04.02.2017.
+ * https://github.com/yarolegovich
  */
-
 public class CropIwaRectShape extends CropIwaShape {
 
     public CropIwaRectShape(CropIwaOverlayConfig config) {

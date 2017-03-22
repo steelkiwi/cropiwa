@@ -13,7 +13,6 @@ import java.io.File;
  * @author Yaroslav Polyakov https://github.com/polyak01
  * 03.02.2017.
  */
-
 public abstract class CropIwaUtils {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")

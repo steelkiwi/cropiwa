@@ -1,7 +1,8 @@
 package com.steelkiwi.cropiwa;
 
 /**
- * Created by yarolegovich on 06.02.2017.
+ * Created by yarolegovich https://github.com/yarolegovich
+ * on 06.02.2017.
  */
 
 public class AspectRatio {

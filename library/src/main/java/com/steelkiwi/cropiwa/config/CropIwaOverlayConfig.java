@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
-import android.view.View;
 
 import com.steelkiwi.cropiwa.AspectRatio;
 import com.steelkiwi.cropiwa.R;

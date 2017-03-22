@@ -7,15 +7,13 @@ import android.graphics.Path;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
-import android.graphics.Xfermode;
 
 import com.steelkiwi.cropiwa.config.CropIwaOverlayConfig;
-import com.steelkiwi.cropiwa.util.CropIwaLog;
 
 /**
  * Created by yarolegovich on 04.02.2017.
+ * https://github.com/yarolegovich
  */
-
 public class CropIwaOvalShape extends CropIwaShape {
 
     private Path clipPath;

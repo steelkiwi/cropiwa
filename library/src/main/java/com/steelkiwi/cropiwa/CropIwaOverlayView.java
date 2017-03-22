@@ -11,7 +11,6 @@ import android.view.View;
 import com.steelkiwi.cropiwa.config.ConfigChangeListener;
 import com.steelkiwi.cropiwa.config.CropIwaOverlayConfig;
 import com.steelkiwi.cropiwa.shape.CropIwaShape;
-import com.steelkiwi.cropiwa.util.CropIwaLog;
 
 /**
  * @author Yaroslav Polyakov https://github.com/polyak01

@@ -8,7 +8,6 @@ import android.graphics.RectF;
  * @author arolegovich
  * 25.02.2017.
  */
-
 public class CropArea {
 
     public static CropArea create(RectF coordinateSystem, RectF imageRect, RectF cropRect) {

@@ -3,7 +3,7 @@ package com.steelkiwi.cropiwa.sample;
 import android.app.Application;
 
 /**
- * @author  yarolegovich
+ * @author yarolegovich https://github.com/yarolegovich
  * 25.02.2017.
  */
 

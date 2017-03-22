@@ -11,9 +11,9 @@ import android.view.ViewGroup;
 import com.steelkiwi.cropiwa.sample.R;
 
 /**
- * Created by yarolegovich on 22.03.2017.
+ * Created by yarolegovich https://github.com/yarolegovich
+ * on 22.03.2017.
  */
-
 public class ConfirmDeletePhotoFragment extends BottomSheetDialogFragment implements View.OnClickListener {
 
     private Uri image;

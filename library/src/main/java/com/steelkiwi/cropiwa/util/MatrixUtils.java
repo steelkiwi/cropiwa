@@ -6,7 +6,6 @@ import android.graphics.RectF;
 /**
  * Created by yarolegovich on 06.02.2017.
  */
-
 public class MatrixUtils {
     private float[] outValues;
 
