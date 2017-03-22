@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 
 import com.steelkiwi.cropiwa.config.CropIwaSaveConfig;
+import com.steelkiwi.cropiwa.shape.CropIwaShapeMask;
 import com.steelkiwi.cropiwa.util.CropIwaLog;
 import com.steelkiwi.cropiwa.util.CropIwaUtils;
 
@@ -60,10 +61,12 @@ public class CropIwaBitmapManager {
         task.execute();
     }
 
-    public void crop(Context context, CropArea cropArea, Uri uri, CropIwaSaveConfig saveConfig) {
+    public void crop(
+            Context context, CropArea cropArea, CropIwaShapeMask mask,
+            Uri uri, CropIwaSaveConfig saveConfig) {
         CropImageTask cropTask = new CropImageTask(
                 context.getApplicationContext(),
-                cropArea, uri, saveConfig);
+                cropArea, mask, uri, saveConfig);
         cropTask.execute();
     }
 
@@ -207,12 +210,16 @@ public class CropIwaBitmapManager {
 
         private Context context;
         private CropArea cropArea;
+        private CropIwaShapeMask mask;
         private Uri srcUri;
         private CropIwaSaveConfig saveConfig;
 
-        public CropImageTask(Context context, CropArea cropArea, Uri srcUri, CropIwaSaveConfig saveConfig) {
+        public CropImageTask(
+                Context context, CropArea cropArea, CropIwaShapeMask mask,
+                Uri srcUri, CropIwaSaveConfig saveConfig) {
             this.context = context;
             this.cropArea = cropArea;
+            this.mask = mask;
             this.srcUri = srcUri;
             this.saveConfig = saveConfig;
         }
@@ -225,6 +232,8 @@ public class CropIwaBitmapManager {
                         saveConfig.getHeight());
 
                 Bitmap cropped = cropArea.applyCropTo(bitmap);
+
+                mask.applyMaskTo(cropped);
 
                 Uri dst = saveConfig.getDstUri();
                 OutputStream os = context.getContentResolver().openOutputStream(dst);

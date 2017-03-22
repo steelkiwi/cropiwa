@@ -230,6 +230,9 @@ public class CropIwaOverlayConfig {
     }
 
     public CropIwaOverlayConfig setCropShape(@NonNull CropIwaShape cropShape) {
+        if (this.cropShape != null) {
+            removeConfigChangeListener(this.cropShape);
+        }
         this.cropShape = cropShape;
         return this;
     }

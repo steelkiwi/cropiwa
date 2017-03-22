@@ -1,5 +1,6 @@
 package com.steelkiwi.cropiwa.shape;
 
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
@@ -27,5 +28,16 @@ public class CropIwaRectShape extends CropIwaShape {
         canvas.drawRect(cropBounds, paint);
     }
 
+    @Override
+    public CropIwaShapeMask getMask() {
+        return new RectShapeMask();
+    }
+
+    private static class RectShapeMask implements CropIwaShapeMask {
+        @Override
+        public void applyMaskTo(Bitmap croppedRegion) {
+            //Nothing to do
+        }
+    }
 }
 

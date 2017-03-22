@@ -33,11 +33,12 @@ public class CropArea {
     }
 
     public Bitmap applyCropTo(Bitmap bitmap) {
-        return Bitmap.createBitmap(bitmap,
+        Bitmap immutableCropped = Bitmap.createBitmap(bitmap,
                 (bitmap.getWidth() * cropRect.left) / imageRect.width(),
                 (bitmap.getHeight() * cropRect.top) / imageRect.height(),
                 (bitmap.getWidth() * cropRect.width()) / imageRect.width(),
                 (bitmap.getHeight() * cropRect.height()) / imageRect.height());
+        return immutableCropped.copy(immutableCropped.getConfig(), true);
     }
 
     private int map(float slope, int coord) {

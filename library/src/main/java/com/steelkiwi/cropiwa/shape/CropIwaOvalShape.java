@@ -1,5 +1,6 @@
 package com.steelkiwi.cropiwa.shape;
 
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -24,11 +25,11 @@ public class CropIwaOvalShape extends CropIwaShape {
         clipPath = new Path();
     }
 
-
     @Override
     protected void clearArea(Canvas canvas, RectF cropBounds, Paint clearPaint) {
         canvas.drawOval(cropBounds, clearPaint);
     }
+
 
     @Override
     protected void drawBorders(Canvas canvas, RectF cropBounds, Paint paint) {
@@ -47,6 +48,27 @@ public class CropIwaOvalShape extends CropIwaShape {
         canvas.clipPath(clipPath);
         super.drawGrid(canvas, cropBounds, paint);
         canvas.restore();
+    }
+
+    @Override
+    public CropIwaShapeMask getMask() {
+        return new OvalShapeMask();
+    }
+
+    private static class OvalShapeMask implements CropIwaShapeMask {
+        @Override
+        public void applyMaskTo(Bitmap croppedRegion) {
+            Paint maskPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            maskPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+
+            RectF ovalRect = new RectF(0, 0, croppedRegion.getWidth(), croppedRegion.getHeight());
+            Path maskShape = new Path();
+            maskShape.addRect(ovalRect, Path.Direction.CW);
+            maskShape.addOval(ovalRect, Path.Direction.CCW);
+
+            Canvas canvas = new Canvas(croppedRegion);
+            canvas.drawPath(maskShape, maskPaint);
+        }
     }
 }
 
