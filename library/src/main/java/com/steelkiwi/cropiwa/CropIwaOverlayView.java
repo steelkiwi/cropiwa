@@ -132,6 +132,11 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
 
         AspectRatio aspectRatio = config.getAspectRatio();
 
+        if (aspectRatio == AspectRatio.IMG_SRC) {
+            cropRect.set(0, 0, getWidth(), getHeight());
+            return;
+        }
+        
         if (cropRect.width() != 0 && cropRect.height() != 0) {
             float currentRatio = cropRect.width() / cropRect.height();
             if (Math.abs(currentRatio - aspectRatio.getRatio()) < 0.001) {
