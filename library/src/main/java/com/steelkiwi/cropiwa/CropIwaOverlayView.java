@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.support.annotation.Nullable;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -22,6 +23,7 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
     private Paint overlayPaint;
     private OnNewBoundsListener newBoundsListener;
     private CropIwaShape cropShape;
+    private RectF imageBounds;
 
     protected RectF cropRect;
     protected CropIwaOverlayConfig config;
@@ -37,6 +39,8 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
         config = c;
         config.addConfigChangeListener(this);
 
+        imageBounds = new RectF();
+
         cropShape = c.getCropShape();
 
         cropRect = new RectF();
@@ -50,6 +54,7 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
 
     @Override
     public void onImagePositioned(RectF imageRect) {
+        imageBounds.set(imageRect);
         setCropRectAccordingToAspectRatio();
         notifyNewBounds();
         invalidate();
@@ -130,13 +135,11 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
             return;
         }
 
-        AspectRatio aspectRatio = config.getAspectRatio();
-
-        if (aspectRatio == AspectRatio.IMG_SRC) {
-            cropRect.set(0, 0, getWidth(), getHeight());
+        AspectRatio aspectRatio = getAspectRatio();
+        if (aspectRatio == null) {
             return;
         }
-        
+
         if (cropRect.width() != 0 && cropRect.height() != 0) {
             float currentRatio = cropRect.width() / cropRect.height();
             if (Math.abs(currentRatio - aspectRatio.getRatio()) < 0.001) {
@@ -154,15 +157,29 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
 
         if (calculateFromWidth) {
             halfWidth = viewWidth * 0.8f * 0.5f;
-            halfHeight = halfWidth / config.getAspectRatio().getRatio();
+            halfHeight = halfWidth / aspectRatio.getRatio();
         } else {
             halfHeight = viewHeight * 0.8f * 0.5f;
-            halfWidth = halfHeight * config.getAspectRatio().getRatio();
+            halfWidth = halfHeight * aspectRatio.getRatio();
         }
 
         cropRect.set(
                 centerX - halfWidth, centerY - halfHeight,
                 centerX + halfWidth, centerY + halfHeight);
+    }
+
+    @Nullable
+    private AspectRatio getAspectRatio() {
+        AspectRatio aspectRatio = config.getAspectRatio();
+        if (aspectRatio == AspectRatio.IMG_SRC) {
+            if (imageBounds.width() == 0 || imageBounds.height() == 0) {
+                return null;
+            }
+            aspectRatio = new AspectRatio(
+                    Math.round(imageBounds.width()),
+                    Math.round(imageBounds.height()));
+        }
+        return aspectRatio;
     }
 
 }

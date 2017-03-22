@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import com.steelkiwi.cropiwa.AspectRatio;
 
 import com.steelkiwi.cropiwa.CropIwaView;
 import com.steelkiwi.cropiwa.sample.config.CropViewConfigurator;

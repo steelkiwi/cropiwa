@@ -25,8 +25,6 @@ import com.steelkiwi.cropiwa.util.TensionInterpolator;
 @SuppressLint("ViewConstructor")
 class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigChangeListener {
 
-    private float minScale;
-
     private Matrix imageMatrix;
     private MatrixUtils matrixUtils;
     private GestureProcessor gestureDetector;
@@ -48,8 +46,6 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
         config = c;
         config.addConfigChangeListener(this);
 
-        minScale = c.getDefaultMinScale();
-
         imageBounds = new RectF();
         allowedBounds = new RectF();
         realImageBounds = new RectF();
@@ -66,7 +62,6 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         if (hasImageSize()) {
-            minScale = calculateMinScale();
             placeImageToInitialPosition();
         }
     }
@@ -120,7 +115,7 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
     private float calculateMinScale() {
         float viewWidth = getWidth(), viewHeight = getHeight();
         if (getRealImageWidth() <= viewWidth && getRealImageHeight() <= viewHeight) {
-            return config.getDefaultMinScale();
+            return config.getMinScale();
         }
         float scaleFactor = viewWidth < viewHeight ?
                 viewWidth / getRealImageWidth() :
@@ -189,7 +184,7 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
 
     private void setScalePercent(@FloatRange(from = 0.01f, to = 1f) float percent) {
         percent = Math.min(Math.max(0.01f, percent), 1f);
-        float desiredScale = minScale + config.getMaxScale() * percent;
+        float desiredScale = config.getMinScale() + config.getMaxScale() * percent;
         float currentScale = matrixUtils.getScaleX(imageMatrix);
         float factor = desiredScale / currentScale;
         scaleImage(factor);
@@ -252,7 +247,7 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
 
     private float getCurrentScalePercent() {
         return CropIwaUtils.boundValue(
-                0.01f + (matrixUtils.getScaleX(imageMatrix) - minScale) / (config.getMaxScale()),
+                0.01f + (matrixUtils.getScaleX(imageMatrix) - config.getMinScale()) / (config.getMaxScale()),
                 0.01f, 1f);
     }
 
@@ -270,7 +265,8 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
         }
 
         private boolean isValidScale(float newScale) {
-            return newScale >= minScale && newScale <= (minScale + config.getMaxScale());
+            return newScale >= config.getMinScale()
+                    && newScale <= (config.getMinScale() + config.getMaxScale());
         }
     }
 
@@ -283,26 +279,49 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
         private TensionInterpolator interpolator = new TensionInterpolator();
 
         public void onDown(MotionEvent e) {
-            updateImageBounds();
-            interpolator.onDown(e.getX(), e.getY(), imageBounds, allowedBounds);
-            saveCoordinates(e.getX(), e.getY(), e.getPointerId(0));
+            onDown(e.getX(), e.getY(), e.getPointerId(0));
         }
 
-        public void onTouchEvent(MotionEvent e) {
-            if (e.getAction() != MotionEvent.ACTION_MOVE) {
-                return;
+        private void onDown(float x, float y, int id) {
+            updateImageBounds();
+            interpolator.onDown(x, y, imageBounds, allowedBounds);
+            saveCoordinates(x, y, id);
+        }
+
+        public void onTouchEvent(MotionEvent e, boolean canHandle) {
+            switch (e.getActionMasked()) {
+                case MotionEvent.ACTION_POINTER_UP:
+                    onPointerUp(e);
+                    return;
+                case MotionEvent.ACTION_MOVE:
+                    break;
+                default:
+                    return;
             }
-            if (e.getPointerId(0) != id) {
-                return;
-            }
+
+            int index = e.findPointerIndex(id);
 
             updateImageBounds();
 
-            float currentX = interpolator.interpolateX(e.getX());
-            float currentY = interpolator.interpolateY(e.getY());
+            float currentX = interpolator.interpolateX(e.getX(index));
+            float currentY = interpolator.interpolateY(e.getY(index));
 
-            translateImage(currentX - prevX, currentY - prevY);
+            if (canHandle) {
+                translateImage(currentX - prevX, currentY - prevY);
+            }
+
             saveCoordinates(currentX, currentY);
+        }
+
+        private void onPointerUp(MotionEvent e) {
+            //If user lifted finger that we used to calculate translation, we need to find a new one
+            if (e.getPointerId(e.getActionIndex()) == id) {
+                int index = 0;
+                while (index < e.getPointerCount() && index == e.getActionIndex()) {
+                    index++;
+                }
+                onDown(e.getX(index), e.getY(index), e.getPointerId(index));
+            }
         }
 
         private void saveCoordinates(float x, float y) {
@@ -343,8 +362,10 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
                 scaleDetector.onTouchEvent(event);
             }
 
-            if (config.isImageTranslationEnabled() && !scaleDetector.isInProgress()) {
-                translationGestureListener.onTouchEvent(event);
+            if (config.isImageTranslationEnabled()) {
+                //We don't want image translation while scaling gesture is in progress
+                //so - canHandle if scaleDetector.isNotInProgress
+                translationGestureListener.onTouchEvent(event, !scaleDetector.isInProgress());
             }
         }
     }

@@ -71,7 +71,7 @@ public class CropIwaImageViewConfig {
         return maxScale;
     }
 
-    public float getDefaultMinScale() {
+    public float getMinScale() {
         return DEFAULT_MIN_SCALE;
     }
 
