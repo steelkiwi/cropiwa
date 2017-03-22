@@ -57,7 +57,7 @@ public class CropIwaOvalShape extends CropIwaShape {
 
     private static class OvalShapeMask implements CropIwaShapeMask {
         @Override
-        public void applyMaskTo(Bitmap croppedRegion) {
+        public Bitmap applyMaskTo(Bitmap croppedRegion) {
             croppedRegion.setHasAlpha(true);
 
             Paint maskPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -71,6 +71,7 @@ public class CropIwaOvalShape extends CropIwaShape {
 
             Canvas canvas = new Canvas(croppedRegion);
             canvas.drawPath(maskShape, maskPaint);
+            return croppedRegion;
         }
     }
 }

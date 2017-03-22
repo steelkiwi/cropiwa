@@ -35,8 +35,9 @@ public class CropIwaRectShape extends CropIwaShape {
 
     private static class RectShapeMask implements CropIwaShapeMask {
         @Override
-        public void applyMaskTo(Bitmap croppedRegion) {
+        public Bitmap applyMaskTo(Bitmap croppedRegion) {
             //Nothing to do
+            return croppedRegion;
         }
     }
 }

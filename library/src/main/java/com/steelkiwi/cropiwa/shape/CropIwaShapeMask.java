@@ -9,5 +9,5 @@ import java.io.Serializable;
  * https://github.com/yarolegovich
  */
 public interface CropIwaShapeMask extends Serializable {
-    void applyMaskTo(Bitmap croppedRegion);
+    Bitmap applyMaskTo(Bitmap croppedRegion);
 }
