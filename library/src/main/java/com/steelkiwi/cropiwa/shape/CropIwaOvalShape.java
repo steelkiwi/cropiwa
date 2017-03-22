@@ -2,6 +2,7 @@ package com.steelkiwi.cropiwa.shape;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
@@ -16,9 +17,13 @@ import com.steelkiwi.cropiwa.util.CropIwaLog;
 
 public class CropIwaOvalShape extends CropIwaShape {
 
+    private Path clipPath;
+
     public CropIwaOvalShape(CropIwaOverlayConfig config) {
         super(config);
+        clipPath = new Path();
     }
+
 
     @Override
     protected void clearArea(Canvas canvas, RectF cropBounds, Paint clearPaint) {
@@ -35,7 +40,13 @@ public class CropIwaOvalShape extends CropIwaShape {
 
     @Override
     protected void drawGrid(Canvas canvas, RectF cropBounds, Paint paint) {
-        CropIwaLog.d("grid is not supported for CropIwaOvalShape yet...");
-        //Temporarily not supported
+        clipPath.rewind();
+        clipPath.addOval(cropBounds, Path.Direction.CW);
+
+        canvas.save(Canvas.CLIP_SAVE_FLAG);
+        canvas.clipPath(clipPath);
+        super.drawGrid(canvas, cropBounds, paint);
+        canvas.restore();
     }
 }
+
