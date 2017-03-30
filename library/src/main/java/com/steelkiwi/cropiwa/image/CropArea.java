@@ -5,7 +5,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 
 /**
- * @author arolegovich
+ * @author yarolegovich
  * 25.02.2017.
  */
 public class CropArea {
@@ -23,8 +23,8 @@ public class CropArea {
                 Math.round(rect.right - originX), Math.round(rect.bottom - originY));
     }
 
-    private Rect imageRect;
-    private Rect cropRect;
+    private final Rect imageRect;
+    private final Rect cropRect;
 
     public CropArea(Rect imageRect, Rect cropRect) {
         this.imageRect = imageRect;

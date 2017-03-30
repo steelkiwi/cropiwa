@@ -3,6 +3,8 @@ package com.steelkiwi.cropiwa.image;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -11,6 +13,7 @@ import com.steelkiwi.cropiwa.config.CropIwaSaveConfig;
 import com.steelkiwi.cropiwa.shape.CropIwaShapeMask;
 import com.steelkiwi.cropiwa.util.CropIwaLog;
 import com.steelkiwi.cropiwa.util.CropIwaUtils;
+import com.steelkiwi.cropiwa.util.ImageHeaderParser;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -54,11 +57,11 @@ public class CropIwaBitmapManager {
             boolean requestInProgress = requestResultListeners.containsKey(uri);
             requestResultListeners.put(uri, listener);
             if (requestInProgress) {
-                CropIwaLog.d("request for %s is already in progress", uri.toString());
+                CropIwaLog.d("request for {%s} is already in progress", uri.toString());
                 return;
             }
         }
-        CropIwaLog.d("load bitmap request for %s", uri.toString());
+        CropIwaLog.d("load bitmap request for {%s}", uri.toString());
         LoadImageTask task = new LoadImageTask(
                 context.getApplicationContext(), uri,
                 width, height);
@@ -139,7 +142,7 @@ public class CropIwaBitmapManager {
                     return null;
                 }
             }
-            return result;
+            return ensureCorrectRotation(context, uri, result);
         }
     }
 
@@ -174,7 +177,7 @@ public class CropIwaBitmapManager {
             closeSilently(bis);
             closeSilently(bos);
         }
-        CropIwaLog.d("cached %s as %s", input.toString(), local.getAbsolutePath());
+        CropIwaLog.d("cached {%s} as {%s}", input.toString(), local.getAbsolutePath());
         return local;
     }
 
@@ -214,6 +217,70 @@ public class CropIwaBitmapManager {
         return inSampleSize;
     }
 
+    private static Bitmap ensureCorrectRotation(Context context, Uri uri, Bitmap bitmap) {
+        int degrees = exifToDegrees(extractExifOrientation(context, uri));
+        if (degrees != 0) {
+            Matrix matrix = new Matrix();
+            matrix.preRotate(degrees);
+            return transformBitmap(bitmap, matrix);
+        }
+        return bitmap;
+    }
+
+    private static Bitmap transformBitmap(@NonNull Bitmap bitmap, @NonNull Matrix transformMatrix) {
+        Bitmap result = bitmap;
+        try {
+            Bitmap converted = Bitmap.createBitmap(
+                    bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(),
+                    transformMatrix,
+                    true);
+            if (!bitmap.sameAs(converted)) {
+                result = converted;
+                bitmap.recycle();
+            }
+        } catch (OutOfMemoryError error) {
+            CropIwaLog.e(error.getMessage(), error);
+        }
+        return result;
+    }
+
+    private static int extractExifOrientation(@NonNull Context context, @NonNull Uri imageUri) {
+        InputStream is = null;
+        try {
+            is = context.getContentResolver().openInputStream(imageUri);
+            if (is == null) {
+                return ExifInterface.ORIENTATION_UNDEFINED;
+            }
+            return new ImageHeaderParser(is).getOrientation();
+        } catch (IOException e) {
+            CropIwaLog.e(e.getMessage(), e);
+            return ExifInterface.ORIENTATION_UNDEFINED;
+        } finally {
+            closeSilently(is);
+        }
+    }
+
+    private static int exifToDegrees(int exifOrientation) {
+        int rotation;
+        switch (exifOrientation) {
+            case ExifInterface.ORIENTATION_ROTATE_90:
+            case ExifInterface.ORIENTATION_TRANSPOSE:
+                rotation = 90;
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_180:
+            case ExifInterface.ORIENTATION_FLIP_VERTICAL:
+                rotation = 180;
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_270:
+            case ExifInterface.ORIENTATION_TRANSVERSE:
+                rotation = 270;
+                break;
+            default:
+                rotation = 0;
+        }
+        return rotation;
+    }
+
     private boolean isWebUri(Uri uri) {
         String scheme = uri.getScheme();
         return "http".equals(scheme) || "https".equals(scheme);
@@ -229,4 +296,3 @@ public class CropIwaBitmapManager {
         void onLoadFailed(Throwable e);
     }
 }
-
