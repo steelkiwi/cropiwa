@@ -2,7 +2,7 @@
 
 The library is a highly configurable widget for image cropping. 
 
-![GifSample1](link_to_first_gif)
+![GifSample1](https://github.com/polyak01/cropiwa/blob/master/assets/3J8gYWC.gif)
 
 ## Gradle 
 Add this into your dependencies block.
@@ -11,8 +11,6 @@ compile 'depency goes here'
 ```
 ## Sample
 Please see the [sample app](sample/src/main/java/com/steelkiwi/cropiwa/sample) for library usage examples.
-
-![GifSample2](link_to_second_gif)
 
 ## Wiki
 The library has a modular architecture, which makes it highly configurable. For info on how to configure `CropIwaView` refer to the sections
@@ -199,5 +197,17 @@ cropView.configureOverlay()
 
 ## License
 ```
-License text goes here
+Copyright © 2017 SteelKiwi, http://steelkiwi.com
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 ```
