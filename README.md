@@ -1,5 +1,8 @@
 # CropIwa
 
+
+[![Made in SteelKiwi](https://github.com/steelkiwi/Getting-started-with-Kotlin/blob/master/made_in_steelkiwi.png)](http://steelkiwi.com/blog/)
+
 The library is a highly configurable widget for image cropping. 
 
 ![GifSample1](https://github.com/polyak01/cropiwa/blob/master/assets/3J8gYWC.gif)
