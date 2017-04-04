@@ -15,7 +15,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".CropGalleryActivity">
+        <activity android:name=".CropGalleryActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -25,11 +26,13 @@
 
         <activity
             android:name=".ViewImageActivity"
+            android:screenOrientation="portrait"
             android:parentActivityName=".CropGalleryActivity"
             android:theme="@style/ViewImageActivityTheme" />
 
         <activity
             android:name=".CropActivity"
+            android:screenOrientation="portrait"
             android:parentActivityName=".CropGalleryActivity" />
 
     </application>
