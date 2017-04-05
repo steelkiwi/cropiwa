@@ -2,6 +2,7 @@
 
 
 [![Made in SteelKiwi](https://github.com/steelkiwi/Getting-started-with-Kotlin/blob/master/made_in_steelkiwi.png)](http://steelkiwi.com/blog/)
+[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-CropIwa-brightgreen.svg?style=flat)](https://android-arsenal.com/details/1/5511)
 
 The library is a highly configurable widget for image cropping. 
 
