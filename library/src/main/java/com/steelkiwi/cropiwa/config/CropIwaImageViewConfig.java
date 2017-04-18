@@ -41,6 +41,9 @@ public class CropIwaImageViewConfig {
             config.setMaxScale(ta.getFloat(
                     R.styleable.CropIwaView_ci_max_scale,
                     config.getMaxScale()));
+            config.setMinScale(ta.getFloat(
+                    R.styleable.CropIwaView_ci_min_scale,
+                    config.getMinScale()));
             config.setImageTranslationEnabled(ta.getBoolean(
                     R.styleable.CropIwaView_ci_translation_enabled,
                     config.isImageTranslationEnabled()));

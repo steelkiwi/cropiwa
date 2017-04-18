@@ -50,6 +50,12 @@ class CropImageTask extends AsyncTask<Void, Void, Throwable> {
 
             cropped = mask.applyMaskTo(cropped);
 
+            if(saveConfig.getHeightPx() != CropIwaBitmapManager.SIZE_UNSPECIFIED &&
+                    saveConfig.getWidthPx() != CropIwaBitmapManager.SIZE_UNSPECIFIED){
+                cropped = Bitmap.createScaledBitmap(
+                        cropped, saveConfig.getWidthPx(), saveConfig.getHeightPx(), false);
+            }
+
             Uri dst = saveConfig.getDstUri();
             OutputStream os = context.getContentResolver().openOutputStream(dst);
             cropped.compress(saveConfig.getCompressFormat(), saveConfig.getQuality(), os);
