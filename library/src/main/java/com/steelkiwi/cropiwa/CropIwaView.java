@@ -111,6 +111,7 @@ public class CropIwaView extends FrameLayout {
     @SuppressWarnings("RedundantIfStatement")
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         //I think this "redundant" if statements improve code readability
+        try {
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
             gestureDetector.onDown(ev);
             return false;
@@ -119,12 +120,21 @@ public class CropIwaView extends FrameLayout {
             return false;
         }
         return true;
+        } catch (IllegalArgumentException e) {
+            //e.printStackTrace();
+            return false;
+        }
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        gestureDetector.onTouchEvent(event);
-        return super.onTouchEvent(event);
+        try {
+            gestureDetector.onTouchEvent(event);
+            return super.onTouchEvent(event);
+        } catch (IllegalArgumentException e) {
+            //e.printStackTrace();
+            return false;
+        }
     }
 
     @Override
