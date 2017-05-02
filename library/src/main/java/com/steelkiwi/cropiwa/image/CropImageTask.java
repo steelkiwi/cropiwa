@@ -57,7 +57,7 @@ class CropImageTask extends AsyncTask<Void, Void, Throwable> {
 
             bitmap.recycle();
             cropped.recycle();
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
             return e;
         }
         return null;
