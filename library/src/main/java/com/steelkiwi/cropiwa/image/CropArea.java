@@ -31,7 +31,7 @@ public class CropArea {
         this.cropRect = cropRect;
     }
 
-    public Bitmap applyCropTo(Bitmap bitmap) {
+    public Bitmap applyCropTo(Bitmap bitmap) throws IllegalArgumentException {
         Bitmap immutableCropped = Bitmap.createBitmap(bitmap,
                 findRealCoordinate(bitmap.getWidth(), cropRect.left, imageRect.width()),
                 findRealCoordinate(bitmap.getHeight(), cropRect.top, imageRect.height()),
