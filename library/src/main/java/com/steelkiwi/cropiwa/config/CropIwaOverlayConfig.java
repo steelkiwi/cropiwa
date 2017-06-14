@@ -116,6 +116,10 @@ public class CropIwaOverlayConfig {
     private List<ConfigChangeListener> listeners;
     private List<ConfigChangeListener> iterationList;
 
+    private boolean isMatchCropArea;
+    private int bitmapWidth = 0;
+    private int bitmapHeight = 0;
+
     public CropIwaOverlayConfig() {
         listeners = new ArrayList<>();
         iterationList = new ArrayList<>();
@@ -171,6 +175,18 @@ public class CropIwaOverlayConfig {
 
     public AspectRatio getAspectRatio() {
         return aspectRatio;
+    }
+
+    public int getBitmapWidth() {
+        return bitmapWidth;
+    }
+
+    public int getBitmapHeight() {
+        return bitmapHeight;
+    }
+
+    public boolean isMatchCropArea() {
+        return isMatchCropArea;
     }
 
     public CropIwaOverlayConfig setOverlayColor(int overlayColor) {
@@ -238,6 +254,17 @@ public class CropIwaOverlayConfig {
 
     public CropIwaOverlayConfig setDynamicCrop(boolean enabled) {
         this.isDynamicCrop = enabled;
+        return this;
+    }
+
+    public CropIwaOverlayConfig setIsMatchCropArea(boolean isMatchCropArea) {
+        this.isMatchCropArea = isMatchCropArea;
+        return this;
+    }
+
+    public CropIwaOverlayConfig setBitmapSize(int bitmapWidth, int bitmapHeight) {
+        this.bitmapWidth = bitmapWidth;
+        this.bitmapHeight = bitmapHeight;
         return this;
     }
 
