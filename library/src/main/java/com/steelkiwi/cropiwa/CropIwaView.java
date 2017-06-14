@@ -174,6 +174,7 @@ public class CropIwaView extends FrameLayout {
     public void setImage(Bitmap bitmap) {
         imageView.setImageBitmap(bitmap);
         overlayView.setDrawOverlay(true);
+        overlayConfig.setBitmapSize(bitmap.getWidth(), bitmap.getHeight()).apply();
     }
 
     public void crop(CropIwaSaveConfig saveConfig) {

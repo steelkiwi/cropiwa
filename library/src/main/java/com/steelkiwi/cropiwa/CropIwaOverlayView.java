@@ -29,6 +29,8 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
     protected CropIwaOverlayConfig config;
 
     protected boolean shouldDrawOverlay;
+    private int bitmapWidth;
+    private int bitmapHeight;
 
     public CropIwaOverlayView(Context context, CropIwaOverlayConfig config) {
         super(context);
@@ -55,7 +57,7 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
     @Override
     public void onImagePositioned(RectF imageRect) {
         imageBounds.set(imageRect);
-        setCropRectAccordingToAspectRatio();
+        setCropRect();
         notifyNewBounds();
         invalidate();
     }
@@ -124,16 +126,43 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
         overlayPaint.setColor(config.getOverlayColor());
         cropShape = config.getCropShape();
         cropShape.onConfigChanged();
-        setCropRectAccordingToAspectRatio();
+
+        bitmapWidth = config.getBitmapWidth();
+        bitmapHeight = config.getBitmapHeight();
+        setCropRect();
         notifyNewBounds();
         invalidate();
     }
 
-    private void setCropRectAccordingToAspectRatio() {
+    private void setCropRect(){
         float viewWidth = getMeasuredWidth(), viewHeight = getMeasuredHeight();
         if (viewWidth == 0 || viewHeight == 0) {
             return;
         }
+        if (config.isMatchCropArea()) {
+            setMatchCropRect(viewWidth, viewHeight);
+        } else {
+            setCropRectAccordingToAspectRatio(viewWidth, viewHeight);
+        }
+    }
+
+    private void setMatchCropRect(float viewWidth, float viewHeight){
+        if (bitmapWidth != 0 && bitmapHeight != 0) {
+            if (bitmapWidth > bitmapHeight) {
+                float wrapHeight = viewWidth * bitmapHeight / bitmapWidth;
+                float topOffset = (viewHeight - wrapHeight) / 2;
+                cropRect.set(0, topOffset, viewWidth, wrapHeight + topOffset);
+            } else {
+                float wrapWidth = viewHeight * bitmapWidth / bitmapHeight;
+                float leftOffset = (viewWidth - wrapWidth) / 2;
+                cropRect.set(leftOffset, 0, wrapWidth + leftOffset, viewHeight);
+            }
+        } else {
+            cropRect.set(0, 0, viewWidth, viewHeight);
+        }
+    }
+
+    private void setCropRectAccordingToAspectRatio(float viewWidth, float viewHeight) {
 
         AspectRatio aspectRatio = getAspectRatio();
         if (aspectRatio == null) {
