@@ -25,7 +25,7 @@ ext {
     groupId = 'com.steelkiwi'
     uploadName = 'cropiwa'
     description = 'Configurable Custom Crop widget for Android'
-    publishVersion = '1.0.0'
+    publishVersion = '1.0.1'
     licences = ['Apache-2.0']
 }
 
