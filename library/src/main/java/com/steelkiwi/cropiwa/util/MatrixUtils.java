@@ -68,7 +68,7 @@ public class MatrixUtils {
     }
 
     private static void scale(RectF initial, float scale, Matrix transform, RectF outRect) {
-        transform.postScale(scale, scale, outRect.centerY(), outRect.centerY());
+        transform.postScale(scale, scale, outRect.centerX(), outRect.centerY());
         transformInitial(initial, transform, outRect);
     }
 
