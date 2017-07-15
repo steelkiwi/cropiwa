@@ -26,7 +26,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.steelkiwi.cropiwa.util.CropIwaUtils.*;
+import static com.steelkiwi.cropiwa.util.CropIwaUtils.closeSilently;
 
 /**
  * @author Yaroslav Polyakov https://github.com/polyak01
@@ -181,38 +181,43 @@ public class CropIwaBitmapManager {
         return local;
     }
 
-    private BitmapFactory.Options getBitmapFactoryOptions(Context c, Uri uri, int width, int height) throws FileNotFoundException {
-        if (width != SIZE_UNSPECIFIED && height != SIZE_UNSPECIFIED) {
-            return getOptimalSizeOptions(c, uri, width, height);
-        } else {
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inSampleSize = 1;
-            return options;
-        }
-    }
-
-    private static BitmapFactory.Options getOptimalSizeOptions(
-            Context context, Uri bitmapUri,
-            int reqWidth, int reqHeight) throws FileNotFoundException {
+    private BitmapFactory.Options getBitmapFactoryOptions(Context context, Uri bitmapUri, int width, int height) throws FileNotFoundException {
         InputStream is = context.getContentResolver().openInputStream(bitmapUri);
         BitmapFactory.Options result = new BitmapFactory.Options();
         result.inJustDecodeBounds = true;
         BitmapFactory.decodeStream(is, null, result);
         result.inJustDecodeBounds = false;
-        result.inSampleSize = calculateInSampleSize(result, reqWidth, reqHeight);
+        result.inSampleSize = calculateInSampleSize(result, width, height);
         return result;
     }
 
     private static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
         final int height = options.outHeight;
         final int width = options.outWidth;
-        int inSampleSize = 1;
+        int inSampleSize = calculateMinimalInSampleSize(options);
+
+        if (reqHeight != SIZE_UNSPECIFIED && reqWidth != SIZE_UNSPECIFIED) {
+            inSampleSize = calculateInSampleSizeForDimensions(reqWidth, reqHeight, height, width, inSampleSize);
+        }
+        return inSampleSize;
+    }
+
+    private static int calculateInSampleSizeForDimensions(int reqWidth, int reqHeight, int height, int width, int baseInSampleSize) {
         if (height > reqHeight || width > reqWidth) {
             final int halfHeight = height / 2;
             final int halfWidth = width / 2;
-            while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
-                inSampleSize *= 2;
+            while ((halfHeight / baseInSampleSize) >= reqHeight && (halfWidth / baseInSampleSize) >= reqWidth) {
+                baseInSampleSize *= 2;
             }
+        }
+        return baseInSampleSize;
+    }
+
+    private static int calculateMinimalInSampleSize(BitmapFactory.Options options) {
+        int inSampleSize = 1;
+        int maximumTextureSize = TextureUtils.getMaxTextureSize();
+        while (options.outWidth / inSampleSize > maximumTextureSize || options.outHeight / inSampleSize > maximumTextureSize) {
+            inSampleSize *= 2;
         }
         return inSampleSize;
     }
