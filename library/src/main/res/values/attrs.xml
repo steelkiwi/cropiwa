@@ -5,6 +5,7 @@
         <attr name="ci_scale_enabled" format="boolean" />
         <attr name="ci_translation_enabled" format="boolean" />
         <attr name="ci_max_scale" format="float" />
+        <attr name="ci_crop_scale" format="float" />
         <attr name="ci_initial_position" format="enum">
             <enum name="centerInside" value="0" />
             <enum name="centerCrop" value="1" />

@@ -23,6 +23,9 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
     private Paint overlayPaint;
     private OnNewBoundsListener newBoundsListener;
     private CropIwaShape cropShape;
+
+    private float cropScale;
+
     private RectF imageBounds;
 
     protected RectF cropRect;
@@ -40,7 +43,7 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
         config.addConfigChangeListener(this);
 
         imageBounds = new RectF();
-
+        cropScale = config.getCropScale();
         cropShape = c.getCropShape();
 
         cropRect = new RectF();
@@ -123,6 +126,7 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
     public void onConfigChanged() {
         overlayPaint.setColor(config.getOverlayColor());
         cropShape = config.getCropShape();
+        cropScale = config.getCropScale();
         cropShape.onConfigChanged();
         setCropRectAccordingToAspectRatio();
         notifyNewBounds();
@@ -156,10 +160,10 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
                         || (aspectRatio.isSquare() && viewWidth < viewHeight);
 
         if (calculateFromWidth) {
-            halfWidth = viewWidth * 0.8f * 0.5f;
+            halfWidth = viewWidth * cropScale * 0.5f;
             halfHeight = halfWidth / aspectRatio.getRatio();
         } else {
-            halfHeight = viewHeight * 0.8f * 0.5f;
+            halfHeight = viewHeight * cropScale * 0.5f;
             halfWidth = halfHeight * aspectRatio.getRatio();
         }
 
