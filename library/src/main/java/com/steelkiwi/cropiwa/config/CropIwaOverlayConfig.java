@@ -2,6 +2,7 @@ package com.steelkiwi.cropiwa.config;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.support.annotation.FloatRange;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 
@@ -21,6 +22,7 @@ import java.util.List;
  */
 public class CropIwaOverlayConfig {
 
+    private static final float DEFAULT_CROP_SCALE = 0.8f;
 
     public static CropIwaOverlayConfig createDefault(Context context) {
         ResUtil r = new ResUtil(context);
@@ -31,6 +33,7 @@ public class CropIwaOverlayConfig {
                 .setOverlayColor(r.color(R.color.cropiwa_default_overlay_color))
                 .setBorderStrokeWidth(r.dimen(R.dimen.cropiwa_default_border_stroke_width))
                 .setCornerStrokeWidth(r.dimen(R.dimen.cropiwa_default_corner_stroke_width))
+                .setCropScale(DEFAULT_CROP_SCALE)
                 .setGridStrokeWidth(r.dimen(R.dimen.cropiwa_default_grid_stroke_width))
                 .setMinWidth(r.dimen(R.dimen.cropiwa_default_min_width))
                 .setMinHeight(r.dimen(R.dimen.cropiwa_default_min_height))
@@ -58,6 +61,9 @@ public class CropIwaOverlayConfig {
             c.setAspectRatio(new AspectRatio(
                     ta.getInteger(R.styleable.CropIwaView_ci_aspect_ratio_w, 1),
                     ta.getInteger(R.styleable.CropIwaView_ci_aspect_ratio_h, 1)));
+            c.setCropScale(ta.getFloat(
+                    R.styleable.CropIwaView_ci_crop_scale,
+                    c.getCropScale()));
             c.setBorderColor(ta.getColor(
                     R.styleable.CropIwaView_ci_border_color,
                     c.getBorderColor()));
@@ -108,6 +114,8 @@ public class CropIwaOverlayConfig {
     private int minWidth;
 
     private AspectRatio aspectRatio;
+
+    private float cropScale;
 
     private boolean isDynamicCrop;
     private boolean shouldDrawGrid;
@@ -169,6 +177,10 @@ public class CropIwaOverlayConfig {
         return isDynamicCrop;
     }
 
+    public float getCropScale() {
+        return cropScale;
+    }
+
     public AspectRatio getAspectRatio() {
         return aspectRatio;
     }
@@ -205,6 +217,11 @@ public class CropIwaOverlayConfig {
 
     public CropIwaOverlayConfig setGridStrokeWidth(int gridStrokeWidth) {
         this.gridStrokeWidth = gridStrokeWidth;
+        return this;
+    }
+
+    public CropIwaOverlayConfig setCropScale(@FloatRange(from = 0.01, to = 1f) float cropScale) {
+        this.cropScale = cropScale;
         return this;
     }
 
