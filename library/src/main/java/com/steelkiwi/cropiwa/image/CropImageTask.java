@@ -9,7 +9,6 @@ import com.steelkiwi.cropiwa.config.CropIwaSaveConfig;
 import com.steelkiwi.cropiwa.shape.CropIwaShapeMask;
 import com.steelkiwi.cropiwa.util.CropIwaUtils;
 
-import java.io.IOException;
 import java.io.OutputStream;
 
 /**
@@ -57,8 +56,8 @@ class CropImageTask extends AsyncTask<Void, Void, Throwable> {
 
             bitmap.recycle();
             cropped.recycle();
-        } catch (IOException e) {
-            return e;
+        } catch (Throwable t) {
+            return t;
         }
         return null;
     }
