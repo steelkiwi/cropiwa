@@ -3,29 +3,21 @@
 buildscript {
     repositories {
         jcenter()
+        google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.3'
-        classpath 'com.novoda:bintray-release:0.4.0'
+        classpath 'com.android.tools.build:gradle:3.0.0-beta7'
     }
 }
 
 allprojects {
     repositories {
         jcenter()
+        google()
     }
 }
 
 task clean(type: Delete) {
     delete rootProject.buildDir
-}
-
-ext {
-    userOrg = 'polyak01'
-    groupId = 'com.steelkiwi'
-    uploadName = 'cropiwa'
-    description = 'Configurable Custom Crop widget for Android'
-    publishVersion = '1.0.3'
-    licences = ['Apache-2.0']
 }
 
