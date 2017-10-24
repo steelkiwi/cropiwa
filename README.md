@@ -11,7 +11,7 @@ The library is a highly configurable widget for image cropping.
 ## Gradle 
 Add this into your dependencies block.
 ```
-compile 'com.steelkiwi:cropiwa:1.0.1'
+compile 'com.steelkiwi:cropiwa:1.0.3'
 ```
 ## Sample
 Please see the [sample app](sample/src/main/java/com/steelkiwi/cropiwa/sample) for library usage examples.
