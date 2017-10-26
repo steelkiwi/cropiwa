@@ -38,15 +38,12 @@ class CropImageTask extends AsyncTask<Void, Void, Throwable> {
     @Override
     protected Throwable doInBackground(Void... params) {
         try {
-            Bitmap bitmap = CropIwaBitmapManager.get().loadToMemory(
-                    context, srcUri, saveConfig.getWidth(),
-                    saveConfig.getHeight());
 
-            if (bitmap == null) {
+            Bitmap cropped = cropArea.applyCropTo(context, srcUri, saveConfig.getWidth(), saveConfig.getHeight());
+
+            if (cropped == null) {
                 return new NullPointerException("Failed to load bitmap");
             }
-
-            Bitmap cropped = cropArea.applyCropTo(bitmap);
 
             cropped = mask.applyMaskTo(cropped);
 
@@ -55,7 +52,6 @@ class CropImageTask extends AsyncTask<Void, Void, Throwable> {
             cropped.compress(saveConfig.getCompressFormat(), saveConfig.getQuality(), os);
             CropIwaUtils.closeSilently(os);
 
-            bitmap.recycle();
             cropped.recycle();
         } catch (IOException e) {
             return e;

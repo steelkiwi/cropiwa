@@ -3,7 +3,9 @@ package com.steelkiwi.cropiwa.image;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.BitmapRegionDecoder;
 import android.graphics.Matrix;
+import android.graphics.Rect;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.support.annotation.NonNull;
@@ -128,6 +130,42 @@ public class CropIwaBitmapManager {
         return result;
     }
 
+    @Nullable
+    Bitmap loadToMemoryWithCrop(Context context, Uri uri, BitmapFactory.Options options, Rect cropRegion) throws IOException {
+        Uri localResUri = toLocalUri(context, uri);
+        Bitmap result = tryLoadCroppedBitmap(context, localResUri, options, cropRegion);
+
+        if (result != null) {
+            CropIwaLog.d("loaded image with dimensions {width=%d, height=%d}",
+                    result.getWidth(),
+                    result.getHeight());
+        }
+        return result;
+    }
+
+    @Nullable
+    Bitmap tryLoadCroppedBitmap(final Context context, final Uri uri, final BitmapFactory.Options options, Rect cropRegion)
+            throws FileNotFoundException  {
+        Bitmap result;
+        while (true) {
+            InputStream is = context.getContentResolver().openInputStream(uri);
+            try {
+                BitmapRegionDecoder bitmapRegionDecoder = BitmapRegionDecoder.newInstance(is, false);
+                result = bitmapRegionDecoder.decodeRegion(cropRegion, options);
+            }
+            catch (OutOfMemoryError | IOException error) {
+                if (options.inSampleSize < 64) {
+                    options.inSampleSize *= 2;
+                    continue;
+                }
+                else {
+                    return null;
+                }
+            }
+            return ensureCorrectRotation(context, uri, result);
+        }
+    }
+
     private Bitmap tryLoadBitmap(Context context, Uri uri, BitmapFactory.Options options) throws FileNotFoundException {
         Bitmap result;
         while (true) {
@@ -146,7 +184,7 @@ public class CropIwaBitmapManager {
         }
     }
 
-    private Uri toLocalUri(Context context, Uri uri) throws IOException {
+    Uri toLocalUri(Context context, Uri uri) throws IOException {
         if (isWebUri(uri)) {
             File cached = localCache.get(uri);
             if (cached == null) {
@@ -181,14 +219,23 @@ public class CropIwaBitmapManager {
         return local;
     }
 
-    private BitmapFactory.Options getBitmapFactoryOptions(Context c, Uri uri, int width, int height) throws FileNotFoundException {
+    BitmapFactory.Options getBitmapFactoryOptions(Context c, Uri uri, int width, int height) throws FileNotFoundException {
         if (width != SIZE_UNSPECIFIED && height != SIZE_UNSPECIFIED) {
             return getOptimalSizeOptions(c, uri, width, height);
         } else {
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inSampleSize = 1;
-            return options;
+            return getDefaultSizeOptions(c, uri);
         }
+    }
+
+    private static BitmapFactory.Options getDefaultSizeOptions(Context context, Uri bitmapUri) throws FileNotFoundException {
+        InputStream is = context.getContentResolver().openInputStream(bitmapUri);
+        BitmapFactory.Options result = new BitmapFactory.Options();
+        result.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        result.inJustDecodeBounds = true;
+        BitmapFactory.decodeStream(is, null, result);
+        result.inJustDecodeBounds = false;
+        result.inSampleSize = 1;
+        return result;
     }
 
     private static BitmapFactory.Options getOptimalSizeOptions(
@@ -196,6 +243,7 @@ public class CropIwaBitmapManager {
             int reqWidth, int reqHeight) throws FileNotFoundException {
         InputStream is = context.getContentResolver().openInputStream(bitmapUri);
         BitmapFactory.Options result = new BitmapFactory.Options();
+        result.inPreferredConfig = Bitmap.Config.ARGB_8888;
         result.inJustDecodeBounds = true;
         BitmapFactory.decodeStream(is, null, result);
         result.inJustDecodeBounds = false;
