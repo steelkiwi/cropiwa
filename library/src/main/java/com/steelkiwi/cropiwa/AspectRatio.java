@@ -1,6 +1,7 @@
 package com.steelkiwi.cropiwa;
 
-import android.support.annotation.IntRange;
+
+import androidx.annotation.IntRange;
 
 /**
  * Created by yarolegovich https://github.com/yarolegovich

@@ -5,9 +5,10 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
-import android.support.annotation.Nullable;
 import android.view.MotionEvent;
 import android.view.View;
+
+import androidx.annotation.Nullable;
 
 import com.steelkiwi.cropiwa.config.ConfigChangeListener;
 import com.steelkiwi.cropiwa.config.CropIwaOverlayConfig;

@@ -6,8 +6,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import com.steelkiwi.cropiwa.config.CropIwaSaveConfig;
 import com.steelkiwi.cropiwa.shape.CropIwaShapeMask;
@@ -27,6 +25,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.steelkiwi.cropiwa.util.CropIwaUtils.*;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * @author Yaroslav Polyakov https://github.com/polyak01

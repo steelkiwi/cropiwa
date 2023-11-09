@@ -2,9 +2,10 @@ package com.steelkiwi.cropiwa.sample.view;
 
 import android.content.Context;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
+
+import androidx.annotation.RequiresApi;
 
 /**
  * @author yarolegovich 25.02.2017.

@@ -1,9 +1,10 @@
 package com.steelkiwi.cropiwa.sample.adapter;
 
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.steelkiwi.cropiwa.AspectRatio;
 import com.steelkiwi.cropiwa.sample.R;

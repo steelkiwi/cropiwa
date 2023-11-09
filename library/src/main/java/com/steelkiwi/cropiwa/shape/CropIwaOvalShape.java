@@ -42,7 +42,7 @@ public class CropIwaOvalShape extends CropIwaShape {
         clipPath.rewind();
         clipPath.addOval(cropBounds, Path.Direction.CW);
 
-        canvas.save(Canvas.CLIP_SAVE_FLAG);
+        canvas.save();
         canvas.clipPath(clipPath);
         super.drawGrid(canvas, cropBounds, paint);
         canvas.restore();
