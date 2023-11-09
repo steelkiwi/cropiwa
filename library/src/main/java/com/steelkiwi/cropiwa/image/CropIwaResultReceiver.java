@@ -22,12 +22,14 @@ public class CropIwaResultReceiver extends BroadcastReceiver {
 
     public static void onCropCompleted(Context context, Uri croppedImageUri) {
         Intent intent = new Intent(ACTION_CROP_COMPLETED);
+        intent.setPackage(context.getPackageName());
         intent.putExtra(EXTRA_URI, croppedImageUri);
         context.sendBroadcast(intent);
     }
 
     public static void onCropFailed(Context context, Throwable e) {
         Intent intent = new Intent(ACTION_CROP_COMPLETED);
+        intent.setPackage(context.getPackageName());
         intent.putExtra(EXTRA_ERROR, e);
         context.sendBroadcast(intent);
     }
