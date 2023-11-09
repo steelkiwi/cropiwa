@@ -2,7 +2,8 @@ package com.steelkiwi.cropiwa.sample.util;
 
 import android.app.Activity;
 import android.content.pm.PackageManager;
-import android.support.v4.app.ActivityCompat;
+
+import androidx.core.app.ActivityCompat;
 
 /**
  * Created by yarolegovich https://github.com/yarolegovich
